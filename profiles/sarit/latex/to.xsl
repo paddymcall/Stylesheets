@@ -176,10 +176,9 @@ capable of dealing with UTF-8 directly.
   %% redefine some chars (either changed by parsing, or not commonly in font)
   \catcode`⃥=\active \def⃥{\textbackslash}
   \catcode`❴=\active \def❴{\{}
+  \catcode`❵=\active \def❵{\}}
   \catcode`〔=\active \def〔{{[}}% translate 〔OPENING TORTOISE SHELL BRACKET
   \catcode`〕=\active \def〕{{]}}% translate 〕CLOSING TORTOISE SHELL BRACKET
-  \catcode`❴=\active \def❴{\{}
-  \catcode`❵=\active \def❵{\}}
   \catcode` =\active \def {\,}
   \catcode`·=\active \def·{\textbullet}
   %% BREAK PERMITTED HERE
