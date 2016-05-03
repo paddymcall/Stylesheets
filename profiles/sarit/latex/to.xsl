@@ -3181,16 +3181,17 @@ the beginning of the document</desc>
 
    <xsl:template name="guessLemma">
      <xsl:choose>
-	    <xsl:when test="tokenize(normalize-space(ancestor-or-self::tei:note/preceding-sibling::text()[1]), '\W+')[last()]">
-	      <xsl:value-of select="tokenize(normalize-space(ancestor-or-self::tei:note/preceding-sibling::text()[1]), '\W+')[last()]"/>
-	    </xsl:when>
-	    <xsl:when test="tokenize(normalize-space(ancestor-or-self::note/following-sibling::text()[1]), '\W+')[1]">
-	      <xsl:value-of select="tokenize(normalize-space(ancestor-or-self::note/following-sibling::text()[1]), '\W+')[1]"/>
-	    </xsl:when>
-	    <xsl:otherwise>
-	      <xsl:text>*</xsl:text>
-	    </xsl:otherwise>
+       <xsl:when test="tokenize(normalize-space(ancestor-or-self::tei:note/preceding-sibling::text()[1]), '\W+')[last()]">
+	 <xsl:value-of select="tokenize(normalize-space(ancestor-or-self::tei:note/preceding-sibling::text()[1]), '\W+')[last()]"/>
+       </xsl:when>
+       <xsl:when test="tokenize(normalize-space(ancestor-or-self::note/following-sibling::text()[1]), '\W+')[1]">
+	 <xsl:value-of select="tokenize(normalize-space(ancestor-or-self::note/following-sibling::text()[1]), '\W+')[1]"/>
+       </xsl:when>
+       <xsl:otherwise>
+	 <xsl:text>*</xsl:text>
+       </xsl:otherwise>
      </xsl:choose>
    </xsl:template>
+
 </xsl:stylesheet>
 
