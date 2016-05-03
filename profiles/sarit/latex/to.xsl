@@ -1578,7 +1578,7 @@ the beginning of the document</desc>
 	<xsl:text>\discretionary{-}{}{}\nobreak\hspace{0pt}</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
-    <xsl:if test="parent::tei:l and ancestor::tei:lg and not(preceding-sibling::tei:lb)">
+    <xsl:if test="parent::tei:l and ancestor::tei:lg and not(preceding-sibling::tei:lb) and string-length(following-sibling::text()) &gt; 8">
       <xsl:text>\\ </xsl:text>      
     </xsl:if>
   </xsl:template>
