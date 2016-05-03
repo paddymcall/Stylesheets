@@ -803,7 +803,7 @@ capable of dealing with UTF-8 directly.
        {}
        \makeatother
        \setlength{\stanzaindentbase}{20pt}
-     \setstanzaindents{8,</xsl:text>
+     \setstanzaindents{3,</xsl:text>
     <xsl:for-each select="1 to tei:maxstanzalines(.)">
       <xsl:text>2,2,</xsl:text>
     </xsl:for-each>
@@ -1578,6 +1578,9 @@ the beginning of the document</desc>
 	<xsl:text>\discretionary{-}{}{}\nobreak\hspace{0pt}</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
+    <xsl:if test="parent::tei:l and ancestor::tei:lg and not(preceding-sibling::tei:lb)">
+      <xsl:text>\\ </xsl:text>      
+    </xsl:if>
   </xsl:template>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
     <desc>[latex] <param name="target">target</param>
@@ -3172,7 +3175,7 @@ the beginning of the document</desc>
        <xsl:text>; </xsl:text>
      </xsl:if>
      <xsl:apply-templates />
-     <xsl:text>{\rmlatinfont (corr by \href{</xsl:text>
+     <xsl:text> {\rmlatinfont (corr by \href{</xsl:text>
      <xsl:value-of select="$resp"/>
      <xsl:text>}{</xsl:text>
      <xsl:value-of select="substring-after($resp, '#')"/>
