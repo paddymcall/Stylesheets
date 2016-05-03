@@ -619,6 +619,9 @@ capable of dealing with UTF-8 directly.
        </xsl:if><xsl:text>
 	 \def\Gin@extensions{.pdf,.png,.jpg,.mps,.tif}
        </xsl:text>
+       <xsl:if test="$ledmac='true'">
+	 <xsl:call-template name="ledmacOptions"/>
+       </xsl:if>
        <xsl:if test="$biblatex='true'">
 	 <xsl:text>%% biblatex stuff start
 	 \usepackage[backend=biber,%
@@ -695,9 +698,6 @@ capable of dealing with UTF-8 directly.
 	   \usepackage{perpage}
            \MakePerPage{footnote}
 	 </xsl:text>
-       </xsl:if>
-       <xsl:if test="$ledmac='true'">
-	 <xsl:call-template name="ledmacOptions"/>
        </xsl:if>
        \usepackage[destlabel=true,% use labels as destination names; ; see dvipdfmx.cfg, option 0x0010, if using xelatex
        pdftitle={<xsl:sequence select="tei:generateSimpleTitle(.)"/>},
@@ -1571,7 +1571,7 @@ the beginning of the document</desc>
       <xsl:when test="not(tei:isInline(..)) and (tei:isLast(.) or tei:isFirst(.))"/>
       <xsl:when test="not($showLineBreaks)"/>
       <xsl:otherwise>
-        <xsl:text>{\tiny $_{</xsl:text>
+        <xsl:text>\discretionary{-}{}{}\nobreak\hspace{0pt}{\tiny $_{</xsl:text>
         <xsl:choose>
           <xsl:when test="@n">
             <xsl:value-of select="@n"/>
@@ -1580,7 +1580,7 @@ the beginning of the document</desc>
             <xsl:text>lb</xsl:text>
           </xsl:otherwise>
         </xsl:choose>
-        <xsl:text>}$}\-</xsl:text>
+        <xsl:text>}$}\discretionary{-}{}{}\nobreak\hspace{0pt}</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -3096,9 +3096,9 @@ the beginning of the document</desc>
    </doc>
    <xsl:template match="tei:q|tei:said">
      <xsl:if test="@type='lemma'">
-       <xsl:text>{\color{</xsl:text>
+       <xsl:text>\discretionary{-}{}{}\nobreak\hspace{0pt}{\color{</xsl:text>
        <xsl:value-of select="$lemmaColor"/>
-       <xsl:text>}</xsl:text>
+       <xsl:text>}\discretionary{-}{}{}\nobreak\hspace{0pt}</xsl:text>
      </xsl:if>
      <xsl:choose>
        <xsl:when test="not(tei:isInline(.))">
