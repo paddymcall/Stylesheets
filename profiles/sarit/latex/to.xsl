@@ -363,6 +363,9 @@ capable of dealing with UTF-8 directly.
         <xsl:text>
 	    % numbering depth
 	    \maxtocdepth{section}
+	    % set up layout of toc
+	    \setpnumwidth{4em}
+	    \setrmarg{5em}
 	    \setsecnumdepth{all}
 	    \newenvironment{docImprint}{\vskip 6pt}{\ifvmode\par\fi }
 	    \newenvironment{docDate}{}{\ifvmode\par\fi }
@@ -1491,17 +1494,7 @@ the beginning of the document</desc>
 		      not(ancestor::tei:note) and
 		      (ancestor::tei:p or ancestor::tei:lg)">
 	<xsl:variable name="lemma">
-	  <xsl:choose>
-	    <xsl:when test="tokenize(normalize-space(ancestor-or-self::tei:note/preceding-sibling::text()[1]), '\W+')[last()]">
-	      <xsl:value-of select="tokenize(normalize-space(ancestor-or-self::tei:note/preceding-sibling::text()[1]), '\W+')[last()]"/>
-	    </xsl:when>
-	    <xsl:when test="tokenize(normalize-space(ancestor-or-self::note/following-sibling::text()[1]), '\W+')[1]">
-	      <xsl:value-of select="tokenize(normalize-space(ancestor-or-self::note/following-sibling::text()[1]), '\W+')[1]"/>
-	    </xsl:when>
-	    <xsl:otherwise>
-	      <xsl:text>*</xsl:text>
-	    </xsl:otherwise>
-	  </xsl:choose>
+	  <xsl:call-template name="guessLemma"/>
 	</xsl:variable>
 	<xsl:text>\edtext{</xsl:text>
 	<xsl:if test="$lemma='*'">
@@ -1571,7 +1564,8 @@ the beginning of the document</desc>
       <xsl:when test="not(tei:isInline(..)) and (tei:isLast(.) or tei:isFirst(.))"/>
       <xsl:when test="not($showLineBreaks)"/>
       <xsl:otherwise>
-        <xsl:text>\discretionary{-}{}{}\nobreak\hspace{0pt}{\tiny $_{</xsl:text>
+        <xsl:text>\discretionary{-}{}{}\nobreak\hspace{0pt}</xsl:text>
+	<xsl:text>{\tiny $_{</xsl:text>
         <xsl:choose>
           <xsl:when test="@n">
             <xsl:value-of select="@n"/>
@@ -1580,7 +1574,8 @@ the beginning of the document</desc>
             <xsl:text>lb</xsl:text>
           </xsl:otherwise>
         </xsl:choose>
-        <xsl:text>}$}\discretionary{-}{}{}\nobreak\hspace{0pt}</xsl:text>
+        <xsl:text>}$}</xsl:text>
+	<xsl:text>\discretionary{-}{}{}\nobreak\hspace{0pt}</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -3133,6 +3128,69 @@ the beginning of the document</desc>
      </xsl:choose>
      <xsl:apply-templates/>
      <xsl:text>}</xsl:text>
+   </xsl:template>
+   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+      <desc>Process element choice</desc>
+   </doc>
+   <xsl:template match="tei:choice">
+     <xsl:text>\edtext{}{</xsl:text>
+     <xsl:text>\lemma{</xsl:text>
+     <xsl:call-template name="guessLemma"/>
+     <xsl:text>}\Afootnote{{\rmlatinfont Correction: }</xsl:text>
+     <xsl:apply-templates/>
+     <xsl:text>}}</xsl:text>
+   </xsl:template>
+
+   <xsl:template match="tei:sic">
+     <xsl:apply-templates />
+     <xsl:text> {\rmlatinfont (sic!)}</xsl:text>
+   </xsl:template>
+
+   <xsl:template match="tei:corr">
+     <xsl:variable name="resp">
+       <xsl:choose>
+       <xsl:when test="@resp">
+	 <xsl:value-of select="@resp" />
+       </xsl:when>
+       <xsl:when test="parent::tei:choice[@resp]">
+	 <!-- feeble attempt to follow an internal link -->
+	 <xsl:choose>
+	   <xsl:when test="//*[@xml:id=substring(parent::tei:choice/@resp, 2)]">
+	     <xsl:value-of select="//*[@xml:id=substring(parent::tei:choice/@resp, 2)][0]/text()"/>
+	   </xsl:when>
+	   <xsl:otherwise>
+	     <xsl:value-of select="parent::tei:choice/@resp"/>
+	   </xsl:otherwise>
+	 </xsl:choose>
+       </xsl:when>
+       <xsl:otherwise>
+	 <xsl:text>encoder</xsl:text>
+       </xsl:otherwise>
+     </xsl:choose>
+     </xsl:variable>
+     <xsl:if test="preceding-sibling::tei:*">
+       <xsl:text>; </xsl:text>
+     </xsl:if>
+     <xsl:apply-templates />
+     <xsl:text>{\rmlatinfont (corr by \href{</xsl:text>
+     <xsl:value-of select="$resp"/>
+     <xsl:text>}{</xsl:text>
+     <xsl:value-of select="substring-after($resp, '#')"/>
+     <xsl:text>})}</xsl:text>
+   </xsl:template>
+
+   <xsl:template name="guessLemma">
+     <xsl:choose>
+	    <xsl:when test="tokenize(normalize-space(ancestor-or-self::tei:note/preceding-sibling::text()[1]), '\W+')[last()]">
+	      <xsl:value-of select="tokenize(normalize-space(ancestor-or-self::tei:note/preceding-sibling::text()[1]), '\W+')[last()]"/>
+	    </xsl:when>
+	    <xsl:when test="tokenize(normalize-space(ancestor-or-self::note/following-sibling::text()[1]), '\W+')[1]">
+	      <xsl:value-of select="tokenize(normalize-space(ancestor-or-self::note/following-sibling::text()[1]), '\W+')[1]"/>
+	    </xsl:when>
+	    <xsl:otherwise>
+	      <xsl:text>*</xsl:text>
+	    </xsl:otherwise>
+     </xsl:choose>
    </xsl:template>
 </xsl:stylesheet>
 
