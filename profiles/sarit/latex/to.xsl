@@ -182,6 +182,8 @@ capable of dealing with UTF-8 directly.
   \catcode`❵=\active \def❵{\}}
   \catcode` =\active \def {\,}
   \catcode`·=\active \def·{\textbullet}
+  %% BREAK PERMITTED HERE
+  \catcode`=\active \def{\discretionary{-}{}{}\nobreak\hspace{0pt}}
   \catcode`ꣵ=\active \defꣵ{
   </xsl:text>
   <xsl:choose>
@@ -194,8 +196,6 @@ capable of dealing with UTF-8 directly.
   </xsl:choose>
   <xsl:text>\textsuperscript{cb}%for candrabindu
   }
-  %% BREAK PERMITTED HERE -> \-
-  \catcode`=\active \def{\-}
   %% show a lot of tolerance
   \tolerance=9000
   \def\textJapanese{\fontspec{Kochi Mincho}}
@@ -1025,7 +1025,7 @@ capable of dealing with UTF-8 directly.
 	  <xsl:if test="following::node()[1][
 			self::text() and
 			matches(self::text(), '^[^\s ]')]">
-	    <xsl:text>\-</xsl:text>
+	    <xsl:text></xsl:text>
 	  </xsl:if>
         </xsl:if>
         <xsl:choose>
@@ -1534,7 +1534,7 @@ the beginning of the document</desc>
 	<xsl:if test="following::node()[1][
 		      self::text() and
 		      matches(self::text(), '^[^\s ]')]">
-	  <xsl:text>\-</xsl:text>
+	  <xsl:text></xsl:text>
 	</xsl:if>
       </xsl:when>
       <xsl:otherwise>
@@ -1564,7 +1564,7 @@ the beginning of the document</desc>
       <xsl:when test="not(tei:isInline(..)) and (tei:isLast(.) or tei:isFirst(.))"/>
       <xsl:when test="not($showLineBreaks)"/>
       <xsl:otherwise>
-        <xsl:text>\discretionary{-}{}{}\nobreak\hspace{0pt}</xsl:text>
+        <xsl:text></xsl:text>
 	<xsl:text>{\tiny $_{</xsl:text>
         <xsl:choose>
           <xsl:when test="@n">
@@ -1575,7 +1575,7 @@ the beginning of the document</desc>
           </xsl:otherwise>
         </xsl:choose>
         <xsl:text>}$}</xsl:text>
-	<xsl:text>\discretionary{-}{}{}\nobreak\hspace{0pt}</xsl:text>
+	<xsl:text></xsl:text>
       </xsl:otherwise>
     </xsl:choose>
     <xsl:if test="parent::tei:l and ancestor::tei:lg and not(preceding-sibling::tei:lb) and string-length(following-sibling::text()) &gt; 8">
@@ -3094,9 +3094,9 @@ the beginning of the document</desc>
    </doc>
    <xsl:template match="tei:q|tei:said">
      <xsl:if test="@type='lemma'">
-       <xsl:text>\discretionary{-}{}{}\nobreak\hspace{0pt}{\color{</xsl:text>
+       <xsl:text>{\color{</xsl:text>
        <xsl:value-of select="$lemmaColor"/>
-       <xsl:text>}\discretionary{-}{}{}\nobreak\hspace{0pt}</xsl:text>
+       <xsl:text>}</xsl:text>
      </xsl:if>
      <xsl:choose>
        <xsl:when test="not(tei:isInline(.))">
@@ -3113,7 +3113,7 @@ the beginning of the document</desc>
        <xsl:if test="following::node()[1][
 		     self::text() and
 		     matches(self::text(), '^[^\s ]')]">
-	 <xsl:text>\-</xsl:text>
+	 <xsl:text></xsl:text>
        </xsl:if>
      </xsl:if>
    </xsl:template>
