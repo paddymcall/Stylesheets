@@ -1577,7 +1577,7 @@ the beginning of the document</desc>
 	<xsl:text></xsl:text>
       </xsl:otherwise>
     </xsl:choose>
-    <xsl:if test="parent::tei:l and ancestor::tei:lg and not(preceding-sibling::tei:lb) and string-length(following-sibling::text()) &gt; 8">
+    <xsl:if test="parent::tei:l and ancestor::tei:lg and not(preceding-sibling::tei:lb) and string-length(following-sibling::text()[0]) &gt; 8">
       <xsl:text>\\ </xsl:text>      
     </xsl:if>
   </xsl:template>
@@ -3157,11 +3157,11 @@ the beginning of the document</desc>
        <xsl:when test="parent::tei:choice[@resp]">
 	 <!-- feeble attempt to follow an internal link -->
 	 <xsl:choose>
-	   <xsl:when test="//*[@xml:id=substring(parent::tei:choice/@resp, 2)]">
-	     <xsl:value-of select="//*[@xml:id=substring(parent::tei:choice/@resp, 2)][0]/text()"/>
+	   <xsl:when test="//*[@xml:id=substring-after(parent::tei:choice/@resp, '#')]">
+	     <xsl:value-of select="//*[@xml:id=substring-after(parent::tei:choice/@resp, '#')][0]/text()"/>
 	   </xsl:when>
 	   <xsl:otherwise>
-	     <xsl:value-of select="parent::tei:choice/@resp"/>
+	     <xsl:value-of select="substring-after(parent::tei:choice/@resp, '#')"/>
 	   </xsl:otherwise>
 	 </xsl:choose>
        </xsl:when>
@@ -3177,7 +3177,7 @@ the beginning of the document</desc>
      <xsl:text> {\rmlatinfont (corr by \href{</xsl:text>
      <xsl:value-of select="$resp"/>
      <xsl:text>}{</xsl:text>
-     <xsl:value-of select="substring-after($resp, '#')"/>
+     <xsl:value-of select="$resp"/>
      <xsl:text>})}</xsl:text>
    </xsl:template>
 
