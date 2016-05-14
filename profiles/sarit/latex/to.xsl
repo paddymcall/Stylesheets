@@ -183,7 +183,7 @@ capable of dealing with UTF-8 directly.
   \catcode`·=\active \def·{\textbullet}
   %% BREAK PERMITTED HERE
   \catcode`=\active \def{\discretionary{-}{}{}\nobreak\hspace{0pt}}
-  \catcode`ꣵ=\active \defꣵ{
+  \catcode`ꣵ=\active \defꣵ{%
   </xsl:text>
   <xsl:choose>
     <xsl:when test="$defaultlanguage='sanskrit'">
@@ -558,18 +558,18 @@ capable of dealing with UTF-8 directly.
   <xsl:template name="makeExternalLink">
     <xsl:param name="ptr" as="xs:boolean" select="false()"/>
     <xsl:param name="dest"/>
-    <xsl:param name="title"/>
+    <xsl:param name="title" select="''"/>
     <xsl:choose>
-      <xsl:when test="$ptr">
+      <xsl:when test="$ptr or $title=''">
         <xsl:text>\url{</xsl:text>
-        <xsl:sequence select="tei:escapeChars($dest,.)"/>
+        <xsl:sequence select="$dest"/>
         <xsl:text>}</xsl:text>
       </xsl:when>
       <xsl:otherwise>
         <xsl:text>\href{</xsl:text>
-        <xsl:value-of select="tei:escapeCharsPartial($dest)"/>
+        <xsl:value-of select="$dest"/>
         <xsl:text>}{</xsl:text>
-        <xsl:value-of select="tei:escapeChars($dest,.)"/>
+	<xsl:value-of select="tei:escapeChars($title,.)"/>
         <xsl:text>}</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
@@ -705,6 +705,7 @@ capable of dealing with UTF-8 directly.
        pdftitle={<xsl:sequence select="tei:generateSimpleTitle(.)"/>},
        pdfauthor={<xsl:sequence select="replace(string-join(/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher,''),';','')"/>}]{hyperref}
        \hyperbaseurl{<xsl:value-of select="$baseURL"/>}
+       \renewcommand\UrlFont{\rmlatinfont}
        \usepackage[english]{cleveref}% clashes with eledmac &lt; 1.10.1!
        % \newcommand{\cref}{\href}
      </xsl:otherwise>
@@ -937,27 +938,10 @@ capable of dealing with UTF-8 directly.
       <xsl:with-param name="readings">
         <xsl:for-each select="tei:rdg">
           <!--	    <xsl:when test="$lem='' or (not(../tei:lem) and position()=1)"/>-->
-          <xsl:if test="@xml:lang">
-            <xsl:choose>
-              <xsl:when test="@xml:lang='bo'">
-                <xsl:text>\texttibetan{</xsl:text>
-              </xsl:when>
-              <xsl:when test="@xml:lang='en'">
-                <xsl:text>\textenglish{</xsl:text>
-              </xsl:when>
-              <xsl:when test="@xml:lang='sa'">
-                <xsl:text>\textsanskrit{</xsl:text>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:text>{\normalfontlatin </xsl:text>
-              </xsl:otherwise>
-            </xsl:choose>
-          </xsl:if>
+          <xsl:call-template name="startLanguage"/>
           <xsl:apply-templates/>
           <xsl:if test="@cause='omission'">[]</xsl:if>
-          <xsl:if test="@xml:lang">
-            <xsl:text>}</xsl:text>
-          </xsl:if>
+	  <xsl:call-template name="endLanguage"/>
 	  <xsl:if test="string-length(@wit) > 0">
 	    <xsl:text> \cite{</xsl:text>
 	    <xsl:call-template name="URIsToBibRefs">
@@ -968,27 +952,10 @@ capable of dealing with UTF-8 directly.
           <xsl:if test="following-sibling::tei:rdg">; </xsl:if>
         </xsl:for-each>
         <xsl:for-each select="tei:note">
-          <xsl:if test="@xml:lang">
-            <xsl:choose>
-              <xsl:when test="@xml:lang='bo'">
-                <xsl:text>\texttibetan{</xsl:text>
-              </xsl:when>
-              <xsl:when test="@xml:lang='en'">
-                <xsl:text>\textenglish{</xsl:text>
-              </xsl:when>
-              <xsl:when test="@xml:lang='sa'">
-                <xsl:text>\textsanskrit{</xsl:text>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:text>{\normalfontlatin </xsl:text>
-              </xsl:otherwise>
-            </xsl:choose>
-          </xsl:if>
+          <xsl:call-template name="startLanguage"/>
           <xsl:text>---\textsc{Note} </xsl:text>
           <xsl:apply-templates/>
-          <xsl:if test="@xml:lang">
-            <xsl:text>}</xsl:text>
-          </xsl:if>
+	  <xsl:call-template name="endLanguage"/>
         </xsl:for-each>
       </xsl:with-param>
       <xsl:with-param name="from">
@@ -1490,7 +1457,7 @@ the beginning of the document</desc>
     <xsl:choose>
       <xsl:when test="$ledmac='true' and
 		      $footnotes-as-critical-notes='true' and
-		      not(ancestor::tei:note) and
+		      not(ancestor::tei:note or ancestor::tei:app) and
 		      (ancestor::tei:p or ancestor::tei:lg)">
 	<xsl:variable name="lemma">
 	  <xsl:call-template name="guessLemma"/>
@@ -1516,7 +1483,14 @@ the beginning of the document</desc>
         <xsl:apply-templates/>
         <xsl:text>}</xsl:text>
       </xsl:when>
-      <xsl:when test="parent::tei:app">
+      <xsl:when test="parent::tei:rdg">
+        <xsl:call-template name="startLanguage"/>
+	<xsl:text> (Note:</xsl:text>
+	<xsl:apply-templates/>
+	<xsl:text>) </xsl:text>
+	<xsl:call-template name="endLanguage"/>
+      </xsl:when>
+      <xsl:when test="ancestor::tei:app">
         <!-- already processed i guess -->
       </xsl:when>
       <xsl:when test="not(ancestor::tei:note)">
@@ -2798,7 +2772,19 @@ the beginning of the document</desc>
                   <xsl:otherwise>
                     <xsl:call-template name="makeExternalLink">
                       <xsl:with-param name="ptr" select="$ptr"/>
-                      <xsl:with-param name="title" select="@n"/>
+                      <xsl:with-param name="title">
+			<xsl:choose>
+			  <xsl:when test="@n">
+			    <xsl:value-of select="@n"/>
+			  </xsl:when>
+			  <xsl:when test="@xml:id">
+			    <xsl:value-of select="@xml:id"/>
+			  </xsl:when>
+			  <xsl:when test="string(.)=''">
+			    <xsl:value-of select="string(.)"/>
+			  </xsl:when>
+			</xsl:choose>
+		      </xsl:with-param>
                       <xsl:with-param name="dest">
                         <xsl:sequence select="tei:resolveURI($here,$a)"/>
                       </xsl:with-param>
@@ -3135,12 +3121,20 @@ the beginning of the document</desc>
       <desc>Process element choice</desc>
    </doc>
    <xsl:template match="tei:choice">
-     <xsl:text>\edtext{}{</xsl:text>
-     <xsl:text>\lemma{</xsl:text>
-     <xsl:call-template name="guessLemma"/>
-     <xsl:text>}\Afootnote{{\rmlatinfont Correction: }</xsl:text>
-     <xsl:apply-templates/>
-     <xsl:text>}}</xsl:text>
+     <xsl:choose>
+       <xsl:when test="$ledmac='true' and (ancestor::tei:p or ancestor::tei:lg)">
+	 <xsl:text>\edtext{}{</xsl:text>
+	 <xsl:text>\lemma{</xsl:text>
+	 <xsl:call-template name="guessLemma"/>
+	 <xsl:text>}\Afootnote{{\rmlatinfont Correction: }</xsl:text>
+	 <xsl:apply-templates/>
+	 <xsl:text>}}</xsl:text>
+       </xsl:when>
+       <xsl:otherwise>
+	 <xsl:text>{\rmlatinfont Correction: }</xsl:text>
+	 <xsl:apply-templates/>
+       </xsl:otherwise>
+     </xsl:choose>
    </xsl:template>
 
    <xsl:template match="tei:sic">
@@ -3174,11 +3168,11 @@ the beginning of the document</desc>
        <xsl:text>; </xsl:text>
      </xsl:if>
      <xsl:apply-templates />
-     <xsl:text> {\rmlatinfont (corr by \href{</xsl:text>
-     <xsl:value-of select="$resp"/>
-     <xsl:text>}{</xsl:text>
-     <xsl:value-of select="$resp"/>
-     <xsl:text>})}</xsl:text>
+     <xsl:text> {\rmlatinfont (corr by </xsl:text>
+     <xsl:call-template name="makeExternalLink">
+       <xsl:with-param name="dest" select="$resp"/>
+     </xsl:call-template>
+     <xsl:text>)}</xsl:text>
    </xsl:template>
 
    <xsl:template name="guessLemma">
