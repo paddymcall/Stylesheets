@@ -1021,8 +1021,11 @@ capable of dealing with UTF-8 directly.
 	</xsl:text>
 	<xsl:if test="ancestor::tei:p">
 	  <xsl:text>
-	    \pstart
-	  </xsl:text>
+	  \pstart </xsl:text>
+	  <!-- avoid empty numbered pars -->
+	  <xsl:if test="not(following-sibling::*)">
+	    <xsl:text> \leavevmode </xsl:text>
+	  </xsl:if>
 	</xsl:if>
       </xsl:when>
       <xsl:when test="$ledmac='true' and
@@ -1708,30 +1711,53 @@ the beginning of the document</desc>
   <xsl:template name="startLanguage">
     <xsl:if test="@xml:lang">
       <xsl:choose>
+	<xsl:when test="self::tei:head">
+	  <xsl:text>{\protect\text</xsl:text>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:text>\begin{</xsl:text>
+	</xsl:otherwise>
+      </xsl:choose>
+      <xsl:choose>
         <xsl:when test="@xml:lang='bo'">
-          <xsl:text>\begin{tibetan}</xsl:text>
+          <xsl:text>tibetan</xsl:text>
         </xsl:when>
         <xsl:when test="starts-with(@xml:lang,'sa')">
-          <xsl:text>\begin{sanskrit}</xsl:text>
+          <xsl:text>sanskrit</xsl:text>
 	</xsl:when>
         <xsl:otherwise>
-          <xsl:text>\begin{english}</xsl:text>
+          <xsl:text>english</xsl:text>
         </xsl:otherwise>
+      </xsl:choose>
+      <xsl:choose>
+	<xsl:when test="self::tei:head">
+	  <xsl:text> </xsl:text>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:text>}</xsl:text>
+	</xsl:otherwise>
       </xsl:choose>
     </xsl:if>
   </xsl:template>
   <xsl:template name="endLanguage">
     <xsl:if test="@xml:lang">
       <xsl:choose>
-        <xsl:when test="@xml:lang='bo'">
-          <xsl:text>\end{tibetan}</xsl:text>
-        </xsl:when>
-        <xsl:when test="starts-with(@xml:lang,'sa')">
-          <xsl:text>\end{sanskrit}</xsl:text>
+	<xsl:when test="self::tei:head">
+	  <xsl:text>}</xsl:text>
 	</xsl:when>
-        <xsl:otherwise>
-          <xsl:text>\end{english}</xsl:text>
-        </xsl:otherwise>
+	<xsl:otherwise>
+	  <xsl:choose>
+            <xsl:when test="@xml:lang='bo'">
+              <xsl:text>\end{tibetan}</xsl:text>
+            </xsl:when>
+            <xsl:when test="starts-with(@xml:lang,'sa')">
+              <xsl:text>\end{sanskrit}</xsl:text>
+	    </xsl:when>
+            <xsl:otherwise>
+              <xsl:text>\end{english}</xsl:text>
+            </xsl:otherwise>
+	  </xsl:choose>	  
+	</xsl:otherwise>
       </xsl:choose>
     </xsl:if>
   </xsl:template>
@@ -2206,7 +2232,7 @@ the beginning of the document</desc>
     <xsl:apply-templates/>
   </xsl:template>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
-    <desc>Escaping chars reserved in tex. Actually, we also substitute
+    <desc>Escaping chars reserved in tex. We also substitute some
     Sanskrit chars here where a break is allowed. Should be fixed
     properly, however, with hyphenation patterns.
     </desc>
@@ -2314,7 +2340,8 @@ the beginning of the document</desc>
         <xsl:choose>
 	  <!-- Decide if this is a starred version. -->
 	  <!-- For frontmatter in memoir class, ignore numberFrontHeadings, since memoir deals with that. -->
-          <xsl:when test="parent::tei:body or
+          <xsl:when test="not(@n) or
+			  parent::tei:body or
 			  ancestor::tei:floatingText or
 			  parent::tei:div/@rend='nonumber' or
 			  (ancestor::tei:back and $numberBackHeadings='') or
@@ -2325,9 +2352,12 @@ the beginning of the document</desc>
 	  </xsl:when>
           <xsl:otherwise>[{<xsl:call-template name="makeHeadTOC"/>}]</xsl:otherwise>
         </xsl:choose>
+	<xsl:text>[{</xsl:text>
+	<xsl:call-template name="makeHeadTOC"/>
+	<xsl:text>}]</xsl:text>
         <xsl:text>{</xsl:text>
 	<xsl:call-template name="startLanguage"/>
-        <xsl:apply-templates/>
+        <xsl:apply-templates mode="simple"/>
         <xsl:if test="following-sibling::tei:head">
           <xsl:text>: </xsl:text>
           <xsl:value-of select="following-sibling::tei:head/tei:escapeChars(.,.)"/>
@@ -2348,7 +2378,7 @@ the beginning of the document</desc>
   </doc>
   <xsl:template name="makeHeadTOC">
     <xsl:variable name="text">
-      <xsl:value-of select="./text()"/>
+      <xsl:value-of select=".//text()"/>
     </xsl:variable>
     <xsl:value-of select="tei:escapeChars(normalize-space($text),.)"/>
     <xsl:if test="following-sibling::tei:head">
@@ -2500,7 +2530,7 @@ the beginning of the document</desc>
         </xsl:call-template>
       </xsl:when>
       <xsl:when test="not(@place) and (ancestor::tei:head)">
-	<xsl:text>\footnote{</xsl:text>
+	<xsl:text>\protect\footnote{</xsl:text>
 	<xsl:apply-templates/>
 	<xsl:text>}</xsl:text>
       </xsl:when>
@@ -2545,8 +2575,8 @@ the beginning of the document</desc>
         <xsl:call-template name="footNote"/>
       </xsl:when>
       <xsl:when test="@place">
-        <xsl:message>unknown @place for note, <xsl:value-of select="@place"/></xsl:message>
-        <xsl:call-template name="displayNote"/>
+        <xsl:message>unknown @place for note: <xsl:value-of select="@place"/></xsl:message>
+        <xsl:call-template name="footNote"/>
       </xsl:when>
       <xsl:otherwise>
         <xsl:call-template name="footNote"/>
@@ -3191,5 +3221,46 @@ the beginning of the document</desc>
      </xsl:choose>
    </xsl:template>
 
+   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+     <desc>Process element list</desc>
+   </doc>
+   <xsl:template match="tei:list">
+     <xsl:if test="$ledmac='true' and not(ancestor::tei:p or ancestor::tei:lg)">
+       <xsl:text>\pstart </xsl:text>
+     </xsl:if>
+     <xsl:if test="tei:head"> 
+       <xsl:text>\leftline{\textbf{</xsl:text>
+       <xsl:for-each select="tei:head">
+         <xsl:apply-templates/>
+       </xsl:for-each>
+       <xsl:text>}} </xsl:text>
+     </xsl:if>
+     <xsl:sequence select="tei:makeHyperTarget(@xml:id)"/>
+     <xsl:choose>
+       <xsl:when test="not(tei:item)"/>
+       <xsl:when test="tei:isGlossList(.)"> 
+	 <xsl:text>\begin{description}&#10;</xsl:text>
+	 <xsl:apply-templates mode="gloss" select="tei:item"/>
+	 <xsl:text>&#10;\end{description} </xsl:text>
+       </xsl:when>
+       <xsl:when test="tei:isOrderedList(.)">
+	 <xsl:text>\begin{enumerate}</xsl:text>
+	 <xsl:apply-templates/>
+	 <xsl:text>&#10;\end{enumerate}</xsl:text>
+       </xsl:when>
+       <xsl:when test="@type='runin' or tei:match(@rend,'runon')">
+         <xsl:apply-templates mode="runin" select="tei:item"/>
+       </xsl:when>
+       <xsl:otherwise> 
+	 <xsl:text>\begin{itemize}</xsl:text>
+	 <xsl:apply-templates/> 
+	 <xsl:text>&#10;\end{itemize} </xsl:text>
+       </xsl:otherwise>
+     </xsl:choose>
+     <xsl:if test="$ledmac='true' and not(ancestor::tei:p or ancestor::tei:lg)">
+       <xsl:text>\pend </xsl:text>
+     </xsl:if>
+   </xsl:template>
+   
 </xsl:stylesheet>
 
