@@ -2352,11 +2352,13 @@ the beginning of the document</desc>
           <xsl:otherwise>[{<xsl:call-template name="makeHeadTOC"/>}]</xsl:otherwise>
         </xsl:choose>
         <xsl:text>{</xsl:text>
+	<xsl:call-template name="startLanguage"/>
         <xsl:apply-templates/>
         <xsl:if test="following-sibling::tei:head">
           <xsl:text>: </xsl:text>
           <xsl:value-of select="following-sibling::tei:head/tei:escapeChars(.,.)"/>
         </xsl:if>
+	<xsl:call-template name="endLanguage"/>
         <xsl:text>}</xsl:text>
         <xsl:if test="../@xml:id">
           <xsl:text>\label{</xsl:text>
