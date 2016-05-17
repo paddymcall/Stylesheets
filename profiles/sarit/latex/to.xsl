@@ -181,8 +181,8 @@ capable of dealing with UTF-8 directly.
   \catcode`〕=\active \def〕{{]}}% translate 〕CLOSING TORTOISE SHELL BRACKET
   \catcode` =\active \def {\,}
   \catcode`·=\active \def·{\textbullet}
-  %% BREAK PERMITTED HERE
-  \catcode`=\active \def{\discretionary{-}{}{}\nobreak\hspace{0pt}}
+  %% BREAK PERMITTED HERE: \discretionary{-}{}{}\nobreak\hspace{0pt}
+  \catcode`=\active \def{\-}
   \catcode`ꣵ=\active \defꣵ{%
   </xsl:text>
   <xsl:choose>
