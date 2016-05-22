@@ -766,7 +766,7 @@ capable of dealing with UTF-8 directly.
     </xsl:text>
     <xsl:text>\usepackage{syntonly}%
     </xsl:text>
-    <xsl:text>%% \usepackage{syntonly}%
+    <xsl:text>%%\syntaxonly%
     </xsl:text>
     <xsl:call-template name="latexSetup"/>
     <xsl:call-template name="latexPackages"/>
