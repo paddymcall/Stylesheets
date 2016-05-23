@@ -461,7 +461,7 @@ capable of dealing with UTF-8 directly.
 	  \newcommand{\unclear}[1]{($^{?}$#1)}
 	  \newcommand{\add}[1]{($^{+}$#1)}
 	  \newcommand{\deletion}[1]{($^{-}$#1)}
-	  \newcommand{\pratIka}[1]{\textcolor{cyan}{#1}}
+	  \newcommand{\quotelemma}[1]{\textcolor{cyan}{#1}}
 	  \newcommand{\name}[1]{#1}
 	  \newcommand{\persName}[1]{#1}
 	  \newcommand{\placeName}[1]{#1}
@@ -562,7 +562,7 @@ capable of dealing with UTF-8 directly.
     <xsl:choose>
       <xsl:when test="$ptr or $title=''">
         <xsl:text>\url{</xsl:text>
-        <xsl:sequence select="$dest"/>
+        <xsl:sequence select="tei:escapeURL($dest)"/>
         <xsl:text>}</xsl:text>
       </xsl:when>
       <xsl:otherwise>
@@ -980,6 +980,11 @@ capable of dealing with UTF-8 directly.
 	    \pend
 	  </xsl:text>
 	</xsl:if>
+	<xsl:if test="ancestor::tei:quote">
+	  <xsl:text>
+	    \begin{quote}
+	  </xsl:text>
+	</xsl:if>
         <xsl:text>
 	    
 	    \stanza[\smallbreak]
@@ -1024,6 +1029,11 @@ capable of dealing with UTF-8 directly.
 
 
 	</xsl:text>
+	<xsl:if test="ancestor::tei:quote">
+	  <xsl:text>
+	    \end{quote}
+	  </xsl:text>
+	</xsl:if>
 	<xsl:if test="ancestor::tei:p">
 	  <xsl:text>
 	  \pstart </xsl:text>
@@ -1169,12 +1179,12 @@ the beginning of the document</desc>
         <xsl:choose>
           <xsl:when test="@n">
             <xsl:text>{</xsl:text>
-            <xsl:value-of select="@n"/>
+            <xsl:value-of select="tei:escapeChars(@n, .)"/>
             <xsl:text>}</xsl:text>
           </xsl:when>
           <xsl:when test="@xml:id">
             <xsl:text>{</xsl:text>
-            <xsl:value-of select="@xml:id"/>
+            <xsl:value-of select="tei:escapeChars(@xml:id, .)"/>
             <xsl:text>}</xsl:text>
           </xsl:when>
           <xsl:otherwise>
@@ -1191,10 +1201,10 @@ the beginning of the document</desc>
 	  <xsl:text>\textsuperscript{\normalfontlatin </xsl:text>
 	  <xsl:choose>
           <xsl:when test="@n">
-            <xsl:value-of select="@n"/>
+            <xsl:value-of select="tei:escapeChars(@n, .)"/>
           </xsl:when>
           <xsl:when test="@xml:id">
-            <xsl:value-of select="@xml:id"/>
+            <xsl:value-of select="tei:escapeChars(@xml:id, .)"/>
           </xsl:when>
           <xsl:otherwise>
             <xsl:text>lb </xsl:text>
@@ -1308,13 +1318,13 @@ the beginning of the document</desc>
         <xsl:text>}</xsl:text>
         <xsl:call-template name="insertApp">
           <xsl:with-param name="elementID">
-            <xsl:value-of select="@xml:id"/>
+            <xsl:value-of select="tei:escapeChars(@xml:id, .)"/>
           </xsl:with-param>
         </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
         <xsl:text>\hypertarget{</xsl:text>
-        <xsl:value-of select="@xml:id"/>
+        <xsl:value-of select="tei:escapeChars(@xml:id, .)"/>
         <xsl:text>}{}</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
@@ -1340,7 +1350,7 @@ the beginning of the document</desc>
           <xsl:text> </xsl:text>
           <xsl:sequence select="tei:i18n('page')"/>
           <xsl:text> </xsl:text>
-          <xsl:value-of select="@n"/>
+          <xsl:value-of select="tei:escapeChars(@n, .)"/>
           <xsl:text>]✁</xsl:text>
         </xsl:when>
         <xsl:when test="$pagebreakStyle='bracketsonly'">
@@ -1354,7 +1364,7 @@ the beginning of the document</desc>
           <xsl:text> </xsl:text>
           <xsl:sequence select="tei:i18n('page')"/>
           <xsl:text> </xsl:text>
-          <xsl:value-of select="@n"/>
+          <xsl:value-of select="tei:escapeChars(@n, .)"/>
           <xsl:text>]</xsl:text>
         </xsl:when>
         <xsl:otherwise>
@@ -1375,18 +1385,18 @@ the beginning of the document</desc>
           <xsl:choose>
 	    <xsl:when test="@n and @edRef">
 	      <xsl:text>\cite[</xsl:text>
-	      <xsl:value-of select="@n"/>
+	      <xsl:value-of select="tei:escapeChars(@n, .)"/>
 	      <xsl:text>]{</xsl:text>
 	      <xsl:value-of select="replace(@edRef, '^#', '')"/>
 	      <xsl:text>}</xsl:text>
 	    </xsl:when>
 	    <xsl:when test="@n and @ed">
-	      <xsl:value-of select="@n"/>
+	      <xsl:value-of select="tei:escapeChars(@n,.)"/>
 	      <xsl:text>/</xsl:text>
-	      <xsl:value-of select="replace(@ed, '^#', '')"/>
+	      <xsl:value-of select="tei:escapeChars(replace(@ed, '^#', ''), .)"/>
 	    </xsl:when>
             <xsl:when test="@n">
-              <xsl:value-of select="@n"/>
+              <xsl:value-of select="tei:escapeChars(@n,.)"/>
             </xsl:when>
             <xsl:otherwise>
               <xsl:text>pb in</xsl:text>
@@ -1432,10 +1442,20 @@ the beginning of the document</desc>
       </xsl:when>
       <xsl:when test="$outputTarget='latex'">
         <xsl:choose>
-          <xsl:when test="@type='pratīka'">
-            <xsl:text>\pratIka{</xsl:text>
+          <xsl:when test="@type='pratīka' or @type='lemma'">
+	    <xsl:choose>
+	      <xsl:when test="//tei:p or //tei:lg" />
+	      <xsl:otherwise>
+		<xsl:text>\quotelemma{</xsl:text>				  
+	      </xsl:otherwise>
+	    </xsl:choose>
             <xsl:apply-templates/>
-            <xsl:text>}</xsl:text>
+            <xsl:choose>
+	      <xsl:when test="//tei:p or //tei:lg"/>
+	      <xsl:otherwise>
+		<xsl:text>}</xsl:text>				  
+	      </xsl:otherwise>
+	    </xsl:choose>
           </xsl:when>
           <xsl:otherwise>
             <xsl:value-of select="$preQuote"/>
@@ -1549,7 +1569,7 @@ the beginning of the document</desc>
 	<xsl:text>{\tiny $_{</xsl:text>
         <xsl:choose>
           <xsl:when test="@n">
-            <xsl:value-of select="@n"/>
+            <xsl:value-of select="tei:escapeChars(@n, .)"/>
           </xsl:when>
           <xsl:otherwise>
             <xsl:text>lb</xsl:text>
@@ -1591,22 +1611,22 @@ the beginning of the document</desc>
               <xsl:choose>
                 <xsl:when test="$class='pageref'">
                   <xsl:text>\pageref{</xsl:text>
-                  <xsl:value-of select="@xml:id"/>
+                  <xsl:value-of select="tei:escapeChars(@xml:id, .)"/>
                   <xsl:text>}</xsl:text>
                 </xsl:when>
                 <xsl:when test="self::tei:note[@xml:id]">
                   <xsl:text>\ref{</xsl:text>
-                  <xsl:value-of select="@xml:id"/>
+                  <xsl:value-of select="tei:escapeChars(@xml:id, .)"/>
                   <xsl:text>}</xsl:text>
                 </xsl:when>
                 <xsl:when test="self::tei:figure[tei:head and @xml:id]">
                   <xsl:text>\ref{</xsl:text>
-                  <xsl:value-of select="@xml:id"/>
+                  <xsl:value-of select="tei:escapeChars(@xml:id, .)"/>
                   <xsl:text>}</xsl:text>
                 </xsl:when>
                 <xsl:when test="self::tei:table[tei:head and @xml:id]">
                   <xsl:text>\ref{</xsl:text>
-                  <xsl:value-of select="@xml:id"/>
+                  <xsl:value-of select="tei:escapeChars(@xml:id, .)"/>
                   <xsl:text>}</xsl:text>
                 </xsl:when>
                 <xsl:when test="starts-with(local-name(.),'div')">
@@ -2237,6 +2257,15 @@ the beginning of the document</desc>
     <xsl:apply-templates/>
   </xsl:template>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+    <desc>Escape urls for LaTeX.
+    # -> \#
+    </desc>
+  </doc>
+  <xsl:function name="tei:escapeURL" as="xs:string" override="yes">
+    <xsl:param name="string"/>
+    <xsl:value-of select="replace($string, '#', '\\#')"/>
+  </xsl:function>
+  <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
     <desc>Escaping chars reserved in tex. We also substitute some
     Sanskrit chars here where a break is allowed. Should be fixed
     properly, however, with hyphenation patterns.
@@ -2812,10 +2841,10 @@ the beginning of the document</desc>
                       <xsl:with-param name="title">
 			<xsl:choose>
 			  <xsl:when test="@n">
-			    <xsl:value-of select="@n"/>
+			    <xsl:value-of select="tei:escapeChars(@n, .)"/>
 			  </xsl:when>
 			  <xsl:when test="@xml:id">
-			    <xsl:value-of select="@xml:id"/>
+			    <xsl:value-of select="tei:escapeChars(@xml:id, .)"/>
 			  </xsl:when>
 			  <xsl:when test="string(.)=''">
 			    <xsl:value-of select="string(.)"/>
