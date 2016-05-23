@@ -175,6 +175,7 @@ capable of dealing with UTF-8 directly.
   \usepackage{fontspec}
   %% redefine some chars (either changed by parsing, or not commonly in font)
   \catcode`⃥=\active \def⃥{\textbackslash}
+  \catcode`‿=\active \def‿{\textunderscore}
   \catcode`❴=\active \def❴{\{}
   \catcode`❵=\active \def❵{\}}
   \catcode`〔=\active \def〔{{[}}% translate 〔OPENING TORTOISE SHELL BRACKET
@@ -567,7 +568,7 @@ capable of dealing with UTF-8 directly.
       </xsl:when>
       <xsl:otherwise>
         <xsl:text>\href{</xsl:text>
-        <xsl:value-of select="$dest"/>
+        <xsl:value-of select="tei:escapeURL($dest)"/>
         <xsl:text>}{</xsl:text>
 	<xsl:value-of select="tei:escapeChars($title,.)"/>
         <xsl:text>}</xsl:text>
@@ -1318,7 +1319,7 @@ the beginning of the document</desc>
         <xsl:text>}</xsl:text>
         <xsl:call-template name="insertApp">
           <xsl:with-param name="elementID">
-            <xsl:value-of select="tei:escapeChars(@xml:id, .)"/>
+            <xsl:value-of select="@xml:id"/>
           </xsl:with-param>
         </xsl:call-template>
       </xsl:when>
@@ -2275,7 +2276,7 @@ the beginning of the document</desc>
     <xsl:param name="letters"/>
     <xsl:param name="context"/>
     <xsl:value-of
-	select="replace(replace(replace(replace(replace(translate($letters,'&#10;',' '), '\\','\\textbackslash '), '_','\\textunderscore '),'\^','\\textasciicircum '), '~','\\textasciitilde '),
+	select="replace(replace(replace(replace(replace(translate($letters,'&#10;',' '), '\\','⃥'), '_','‿'),'\^','\\textasciicircum '), '~','\\textasciitilde '),
 	  '([\}\{%&amp;\$#])','\\$1')"/>
   </xsl:function>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
