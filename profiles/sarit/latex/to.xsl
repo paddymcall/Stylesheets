@@ -2729,7 +2729,9 @@ the beginning of the document</desc>
 		<xsl:text>}{</xsl:text>
 		<xsl:choose>
 		  <xsl:when test="descendant-or-self::text()">
-		    <xsl:value-of select="tei:escapeChars(descendant-or-self::text(), .)"/>
+		    <xsl:for-each select="descendant-or-self::text()">
+		      <xsl:value-of select="tei:escapeChars(self::text(), .)"/>
+		    </xsl:for-each>
 		  </xsl:when>
 		  <xsl:otherwise>
 		    <xsl:value-of select="tei:escapeChars(upper-case($cRef),.)"/>
