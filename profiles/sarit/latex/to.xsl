@@ -49,6 +49,11 @@ of this software, even if advised of the possibility of such damage.
   <xsl:param name="revision">HEAD</xsl:param>
   <xsl:param name="useHeaderFrontMatter">true</xsl:param>
   <xsl:param name="debuglatex">true</xsl:param>
+  <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" type="directory-path">
+    (List of) directories in which graphics can be found. Relative to
+    the TeX file.
+  </doc>
+  <xsl:param name="graphicspath">{images/}</xsl:param>
   <xsl:param name="documentclass">memoir</xsl:param>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="string">
     <desc>Optional parameters for documentclass</desc>
@@ -157,7 +162,7 @@ capable of dealing with UTF-8 directly.
 </xsl:when>
       <xsl:otherwise>
         <xsl:text>
-	  \usepackage{euler}
+	  \usepackage{eulervm}
 	  \usepackage{xltxtra}
   \usepackage{polyglossia}
   \PolyglossiaSetup{sanskrit}{
@@ -611,6 +616,9 @@ capable of dealing with UTF-8 directly.
 	 \renewcommand*{\marginfont}{\color{black}\rmlatinfont\scriptsize}
 	 \setlength\marginparwidth{.75in}
 	 \usepackage{graphicx}
+	 \graphicspath{</xsl:text>
+	 <xsl:value-of select="$graphicspath"/>
+	 <xsl:text>}
 	 \usepackage{csquotes}
        </xsl:text><xsl:if test="key('ENDNOTES',1)">
 	 \usepackage{endnotes}
@@ -1018,9 +1026,7 @@ capable of dealing with UTF-8 directly.
           </xsl:when>
         </xsl:choose>
         <xsl:for-each select="tei:l">
-          <xsl:if test="parent::tei:lg/@xml:lang='Av'">{\itshape </xsl:if>
           <xsl:apply-templates/>
-          <xsl:if test="parent::tei:lg/@xml:lang='Av'">}</xsl:if>
           <xsl:if test="following-sibling::tei:l">
             <xsl:text>&amp;</xsl:text>
           </xsl:if>
@@ -1372,14 +1378,22 @@ the beginning of the document</desc>
 	  <xsl:choose>
 	    <xsl:when test="$ledmac='true' and
 			    (ancestor::tei:p or ancestor::tei:lg) and
-			    not(ancestor::tei:note)">
+			    not(ancestor::tei:note or
+			    ancestor::tei:table or
+			    ancestor::tei:app)">
               <xsl:text>\leavevmode\ledsidenote{</xsl:text>
+	    </xsl:when>
+	    <xsl:when test="(ancestor::tei:p or ancestor::tei:lg) and
+			    not(ancestor::tei:note or
+			    ancestor::tei:table or
+			    ancestor::tei:app)">
+	      <xsl:text>\marginpar{\footnotesize </xsl:text>
 	    </xsl:when>
 	    <xsl:when test="ancestor::tei:note">
               <xsl:text>\marginnote{</xsl:text>
 	    </xsl:when>
 	    <xsl:otherwise>
-	      <xsl:text>\marginpar{\footnotesize</xsl:text>
+	      <xsl:text>\textsuperscript{</xsl:text>
 	    </xsl:otherwise>
 	  </xsl:choose>
 	  <xsl:text>\textenglish{</xsl:text>
@@ -1388,7 +1402,7 @@ the beginning of the document</desc>
 	      <xsl:text>\cite[</xsl:text>
 	      <xsl:value-of select="tei:escapeChars(@n, .)"/>
 	      <xsl:text>]{</xsl:text>
-	      <xsl:value-of select="replace(@edRef, '^#', '')"/>
+	      <xsl:value-of select="tei:escapeChars(replace(@edRef, '^#', ''),.)"/>
 	      <xsl:text>}</xsl:text>
 	    </xsl:when>
 	    <xsl:when test="@n and @ed">
@@ -2275,9 +2289,19 @@ the beginning of the document</desc>
   <xsl:function name="tei:escapeChars" as="xs:string" override="yes">
     <xsl:param name="letters"/>
     <xsl:param name="context"/>
-    <xsl:value-of
-	select="replace(replace(replace(replace(replace(translate($letters,'&#10;',' '), '\\','⃥'), '_','‿'),'\^','\\textasciicircum '), '~','\\textasciitilde '),
-	  '([\}\{%&amp;\$#])','\\$1')"/>
+    <xsl:choose>
+      <!-- for ledmac, make &amp; into "\ampersand" -->
+	<xsl:when test="$ledmac='true'">
+	  <xsl:value-of
+	      select="replace(replace(replace(replace(replace(replace(translate($letters,'&#10;',' '), '\\','⃥'), '_','‿'), '\^','\\textasciicircum '), '~','\\textasciitilde '), '&amp;', '\\ampersand '),
+		      '([\}\{%&amp;\$#])','\\$1')"/>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:value-of
+	      select="replace(replace(replace(replace(replace(translate($letters,'&#10;',' '), '\\','⃥'), '_','‿'), '\^','\\textasciicircum '), '~','\\textasciitilde '),
+		      '([\}\{%&amp;\$#])','\\$1')"/>
+	</xsl:otherwise>
+    </xsl:choose>
   </xsl:function>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
     <desc>Process element quote</desc>
@@ -2705,10 +2729,10 @@ the beginning of the document</desc>
 		<xsl:text>}{</xsl:text>
 		<xsl:choose>
 		  <xsl:when test="descendant-or-self::text()">
-		    <xsl:value-of select="descendant-or-self::text()"/>
+		    <xsl:value-of select="tei:escapeChars(descendant-or-self::text(), .)"/>
 		  </xsl:when>
 		  <xsl:otherwise>
-		    <xsl:value-of select="upper-case($cRef)"/>
+		    <xsl:value-of select="tei:escapeChars(upper-case($cRef),.)"/>
 		  </xsl:otherwise>
 		</xsl:choose>
 	      </xsl:otherwise>
@@ -3245,10 +3269,10 @@ the beginning of the document</desc>
    <xsl:template name="guessLemma">
      <xsl:choose>
        <xsl:when test="tokenize(normalize-space(ancestor-or-self::tei:note/preceding-sibling::text()[1]), '\W+')[last()]">
-	 <xsl:value-of select="tokenize(normalize-space(ancestor-or-self::tei:note/preceding-sibling::text()[1]), '\W+')[last()]"/>
+	 <xsl:value-of select="tei:escapeChars(tokenize(normalize-space(ancestor-or-self::tei:note/preceding-sibling::text()[1]), '\W+')[last()], .)"/>
        </xsl:when>
        <xsl:when test="tokenize(normalize-space(ancestor-or-self::note/following-sibling::text()[1]), '\W+')[1]">
-	 <xsl:value-of select="tokenize(normalize-space(ancestor-or-self::note/following-sibling::text()[1]), '\W+')[1]"/>
+	 <xsl:value-of select="tei:escapeChars(tokenize(normalize-space(ancestor-or-self::note/following-sibling::text()[1]), '\W+')[1], .)"/>
        </xsl:when>
        <xsl:otherwise>
 	 <xsl:text>*</xsl:text>
@@ -3296,6 +3320,24 @@ the beginning of the document</desc>
        <xsl:text>\pend </xsl:text>
      </xsl:if>
    </xsl:template>
-   
+   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+     <desc>Process element cell</desc>
+   </doc>
+   <xsl:template match="tei:cell">
+     <xsl:if test="preceding-sibling::tei:cell">\tabcellsep </xsl:if>
+     <xsl:choose>
+       <xsl:when test="@role='label'">
+	 <xsl:text>\textbf{</xsl:text>
+       </xsl:when>
+       <xsl:otherwise />
+     </xsl:choose>
+     <xsl:apply-templates />
+     <xsl:choose>
+       <xsl:when test="@role='label'">
+	 <xsl:text>}</xsl:text>
+       </xsl:when>
+       <xsl:otherwise />
+     </xsl:choose>
+   </xsl:template>   
 </xsl:stylesheet>
 
