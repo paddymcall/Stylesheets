@@ -986,6 +986,7 @@ capable of dealing with UTF-8 directly.
       <xsl:when test="$ledmac='true' and not(ancestor::tei:note)">
 	<xsl:if test="ancestor::tei:p and
 		      (preceding-sibling::* or
+		      preceding-sibling::text() or
 		      parent::tei:q or
 		      parent::tei:quote or
 		      parent::tei:cit
@@ -1186,6 +1187,11 @@ the beginning of the document</desc>
         <xsl:text>\hfill\\</xsl:text>
       </xsl:when>
       <xsl:when test="parent::tei:div">
+	<xsl:if test="$ledmac='true'">
+	  <xsl:text>
+	    \pstart % lonely line to par
+	  </xsl:text>
+	</xsl:if>
         <xsl:text>
 \paragraph*</xsl:text>
         <xsl:choose>
@@ -1207,6 +1213,11 @@ the beginning of the document</desc>
         <xsl:if test="not(node()[not(self::text()[not(normalize-space())])])">
           <xsl:text>—</xsl:text>
         </xsl:if>
+	<xsl:if test="$ledmac='true'">
+	  <xsl:text>
+	    \pend % lonely line to par, the end
+	  </xsl:text>
+	</xsl:if>
       </xsl:when>
       <xsl:otherwise>
 	<xsl:if test="boolean($showLineBreaks)">
