@@ -984,12 +984,18 @@ capable of dealing with UTF-8 directly.
   <xsl:template match="tei:lg">
     <xsl:choose>
       <xsl:when test="$ledmac='true' and not(ancestor::tei:note)">
-	<xsl:if test="ancestor::tei:p">
+	<xsl:if test="ancestor::tei:p and
+		      (preceding-sibling::* or
+		      parent::tei:q or
+		      parent::tei:quote or
+		      parent::tei:cit
+		      ) and
+		      not(preceding-sibling::tei:lg)">
 	  <xsl:text>
-	    \pend
+	    \pend% close preceding par
 	  </xsl:text>
 	</xsl:if>
-	<xsl:if test="ancestor::tei:quote">
+	<xsl:if test="parent::tei:quote or parent::tei:q">
 	  <xsl:text>
 	    \begin{quote}
 	  </xsl:text>
@@ -1036,18 +1042,17 @@ capable of dealing with UTF-8 directly.
 
 
 	</xsl:text>
-	<xsl:if test="ancestor::tei:quote">
+	<xsl:if test="parent::tei:quote or parent::tei:q">
 	  <xsl:text>
 	    \end{quote}
 	  </xsl:text>
 	</xsl:if>
-	<xsl:if test="ancestor::tei:p">
+	<xsl:if test="ancestor::tei:p and
+		      not(following-sibling::tei:lg)">
 	  <xsl:text>
-	  \pstart </xsl:text>
-	  <!-- avoid empty numbered pars -->
-	  <xsl:if test="not(following-sibling::*)">
-	    <xsl:text> \leavevmode </xsl:text>
-	  </xsl:if>
+	    \pstart  \leavevmode% new par for following
+	    \hphantom{.}
+	  </xsl:text>
 	</xsl:if>
       </xsl:when>
       <xsl:when test="$ledmac='true' and
@@ -1174,7 +1179,7 @@ the beginning of the document</desc>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
-      <xsl:when test="ancestor::tei:quote and following-sibling::tei:l"><xsl:apply-templates/>\\
+      <xsl:when test="(ancestor::tei:quote or ancestor::tei:q) and following-sibling::tei:l"><xsl:apply-templates/>\\
 	 </xsl:when>
       <xsl:when test="parent::tei:sp">
         <xsl:apply-templates/>
@@ -1259,7 +1264,11 @@ the beginning of the document</desc>
         </xsl:choose>
 	<xsl:text>
 
-	  \pstart </xsl:text>
+	  \pstart \leavevmode% starting standard par
+	</xsl:text>
+	<xsl:if test="name(child::*[1]) = 'lg' or name(child::*[1]) = 'q' or name(child::*[1]) = 'quote'">
+	  <xsl:text>\hphantom{.}</xsl:text>
+	</xsl:if>
       </xsl:when>
       <xsl:when test="$ledmac='true' and
 		      $footnotes-as-critical-notes='true' and
@@ -1282,9 +1291,14 @@ the beginning of the document</desc>
     </xsl:if>
     <xsl:apply-templates/>
     <xsl:call-template name="endLanguage"/>
-    <xsl:if test="$ledmac='true' and not(ancestor::tei:note or ancestor::tei:front or ancestor::tei:back or ancestor::tei:p)">
+    <xsl:if test="$ledmac='true'
+		  and not(
+		  ancestor::tei:note or
+		  ancestor::tei:front or
+		  ancestor::tei:back or
+		  ancestor::tei:p)">
       <xsl:text>
-	\pend
+	\pend% ending standard par
       </xsl:text>
       <xsl:if test="$leftside">
         <xsl:text>\end{Leftside}
@@ -2164,7 +2178,7 @@ the beginning of the document</desc>
             <xsl:text>\tabularnewline % first row but no label</xsl:text>
           </xsl:if>
           <xsl:if test="$first-row='false'">
-            <xsl:text>\tabularnewline </xsl:text>
+            <xsl:text>\tabularnewline{} </xsl:text>
             <!-- if this row is not a label, but the immediately following one is, mark it -->
             <xsl:if test="following-sibling::tei:row[1][@role='label'] and not(@role='label')">
               <xsl:text>\midrule </xsl:text>
@@ -3177,7 +3191,7 @@ the beginning of the document</desc>
        <xsl:text>}</xsl:text>
      </xsl:if>
      <xsl:choose>
-       <xsl:when test="not(tei:isInline(.))">
+       <xsl:when test="not(tei:isInline(.)) and not(parent::tei:p and $ledmac='true')">
 	 <xsl:text>&#10;\begin{</xsl:text><xsl:value-of select="$quoteEnv"/><xsl:text>}</xsl:text>
 	 <xsl:apply-templates/>
 	 <xsl:text>\end{</xsl:text><xsl:value-of select="$quoteEnv"/><xsl:text>}&#10;</xsl:text>
@@ -3286,7 +3300,7 @@ the beginning of the document</desc>
      <desc>Process element list</desc>
    </doc>
    <xsl:template match="tei:list">
-     <xsl:if test="$ledmac='true' and not(ancestor::tei:p or ancestor::tei:lg)">
+     <xsl:if test="$ledmac='true' and not(ancestor::tei:p or ancestor::tei:lg or ancestor::tei:back)">
        <xsl:text>\pstart </xsl:text>
      </xsl:if>
      <xsl:if test="tei:head"> 
@@ -3318,7 +3332,7 @@ the beginning of the document</desc>
 	 <xsl:text>&#10;\end{itemize} </xsl:text>
        </xsl:otherwise>
      </xsl:choose>
-     <xsl:if test="$ledmac='true' and not(ancestor::tei:p or ancestor::tei:lg)">
+     <xsl:if test="$ledmac='true' and not(ancestor::tei:p or ancestor::tei:lg or ancestor::tei:back)">
        <xsl:text>\pend </xsl:text>
      </xsl:if>
    </xsl:template>
