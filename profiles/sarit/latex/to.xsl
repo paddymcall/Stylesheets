@@ -55,6 +55,18 @@ of this software, even if advised of the possibility of such damage.
   </doc>
   <xsl:param name="graphicspath">{images/}</xsl:param>
   <xsl:param name="documentclass">memoir</xsl:param>
+  <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
+    <desc>
+      <p>LaTeX paper size</p>
+    </desc>
+  </doc>
+  <xsl:param name="latexPaperSize">broadsheetpaper</xsl:param>
+  <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
+    <desc>
+      <p>Optimize space with savetrees</p>
+    </desc>
+  </doc>
+  <xsl:param name="savetrees" as="xs:boolean">true</xsl:param>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="string">
     <desc>Optional parameters for documentclass</desc>
   </doc>
@@ -162,6 +174,7 @@ capable of dealing with UTF-8 directly.
 </xsl:when>
       <xsl:otherwise>
         <xsl:text>
+	  \usepackage[normalem]{ulem}
 	  \usepackage{eulervm}
 	  \usepackage{xltxtra}
   \usepackage{polyglossia}
@@ -176,6 +189,7 @@ capable of dealing with UTF-8 directly.
   <xsl:text>
   % english should be available, notes and stuff
   \setotherlanguage{english}
+  \setotherlanguage{german}
   \setotherlanguage[numerals=arabic]{tibetan}
   \usepackage{fontspec}
   %% redefine some chars (either changed by parsing, or not commonly in font)
@@ -293,6 +307,7 @@ capable of dealing with UTF-8 directly.
   \setmonofont{</xsl:text>
         <xsl:value-of select="$typewriterFont"/>
         <xsl:text>}</xsl:text>
+	<xsl:if test="$latexPaperSize='a4paper' or $latexPaperSize='letterpaper'">
 	<xsl:text>
 	  %% page layout start: fit to a4 and US letterpaper (example in memoir.pdf)
 	  %% page layout start
@@ -345,8 +360,16 @@ capable of dealing with UTF-8 directly.
 	  \setlength{\topskip}{1.6\topskip}
 	  % fix up layout
 	  \checkandfixthelayout
-	  \sloppybottom
 	  %% page layout end
+	</xsl:text>
+	</xsl:if>
+	<xsl:if test="$savetrees">
+	  <xsl:text>
+	    \usepackage{savetrees}
+	  </xsl:text>
+	</xsl:if>
+	<xsl:text>
+	  \sloppybottom
 	</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
@@ -989,7 +1012,8 @@ capable of dealing with UTF-8 directly.
 		      preceding-sibling::text() or
 		      parent::tei:q or
 		      parent::tei:quote or
-		      parent::tei:cit
+		      parent::tei:cit or
+		      (parent::tei:p and not(preceding-sibling::text()))
 		      ) and
 		      not(preceding-sibling::tei:lg)">
 	  <xsl:text>
@@ -1405,7 +1429,8 @@ the beginning of the document</desc>
 			    (ancestor::tei:p or ancestor::tei:lg) and
 			    not(ancestor::tei:note or
 			    ancestor::tei:table or
-			    ancestor::tei:app)">
+			    ancestor::tei:app) and
+			    not(preceding-sibling::tei:lg)">
               <xsl:text>\leavevmode\ledsidenote{</xsl:text>
 	    </xsl:when>
 	    <xsl:when test="(ancestor::tei:p or ancestor::tei:lg) and
@@ -1427,7 +1452,9 @@ the beginning of the document</desc>
 	      <xsl:text>\cite[</xsl:text>
 	      <xsl:value-of select="tei:escapeChars(@n, .)"/>
 	      <xsl:text>]{</xsl:text>
-	      <xsl:value-of select="tei:escapeChars(replace(@edRef, '^#', ''),.)"/>
+	      <xsl:call-template name="URIsToBibRefs">
+		<xsl:with-param name="targets" select="@edRef"/>
+	      </xsl:call-template>
 	      <xsl:text>}</xsl:text>
 	    </xsl:when>
 	    <xsl:when test="@n and @ed">
@@ -1446,7 +1473,9 @@ the beginning of the document</desc>
               </xsl:when>
 	      <xsl:when test="@edRef">
 		<xsl:text>\cite{</xsl:text>
-		<xsl:value-of select="replace(@edRef, '^#', '')"/>
+		<xsl:call-template name="URIsToBibRefs">
+		  <xsl:with-param name="targets" select="@edRef"/>
+		</xsl:call-template>
 		<xsl:text>}</xsl:text>
 	      </xsl:when>
 	      </xsl:choose>
@@ -2482,7 +2511,7 @@ the beginning of the document</desc>
     <xsl:variable name="depth">
       <xsl:value-of select="count(ancestor::tei:div|tei:div1|tei:div2|tei:div3|tei:div4|tei:div5)"/>
     </xsl:variable>
-    <xsl:if test="not(child::head) and @xml:id">
+    <xsl:if test="not(child::tei:head) and @xml:id">
       <xsl:text>\label{</xsl:text>
       <xsl:value-of select="@xml:id"/>
       <xsl:text>}</xsl:text>
@@ -2534,6 +2563,14 @@ the beginning of the document</desc>
       <xsl:choose>
 	<xsl:when test="$ledmac='true'">
 	  <xsl:message>Trailer in ledmac mode</xsl:message>
+	  <xsl:if test="not(self::tei:label) and not(parent::tei:div or parent::tei:p or parent::tei:lg) and not(preceding-sibling::tei:trailer)">
+	    <xsl:text>
+	      
+	      \begingroup
+	      \beginnumbering% beginning numbering for trailer outside div
+	      
+	    </xsl:text>
+	  </xsl:if>
 	  <xsl:text>
 	    
 	    \pstart
@@ -2545,6 +2582,14 @@ the beginning of the document</desc>
 	    \pend
 	  
 	  </xsl:text>
+	  <xsl:if test="not(self::tei:label) and not(parent::tei:div or parent::tei:p or parent::tei:lg) and not(following-sibling::tei:trailer)">
+	    <xsl:text>
+	      
+	      \endnumbering% ending numbering for trailer outside div
+	      \endgroup
+	      
+	    </xsl:text>
+	  </xsl:if>
 	</xsl:when>
 	<xsl:otherwise>
 	  <xsl:message>Trailer without ledmac</xsl:message>
