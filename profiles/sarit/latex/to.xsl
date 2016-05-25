@@ -1286,7 +1286,8 @@ the beginning of the document</desc>
 		      ancestor::tei:note or
 		      ancestor::tei:front or
 		      ancestor::tei:back or
-		      ancestor::tei:p
+		      ancestor::tei:p or
+		      not(child::node())
 		      )">
         <xsl:message>Processing a main text par in ledmac mode</xsl:message>
         <xsl:choose>
@@ -1331,7 +1332,8 @@ the beginning of the document</desc>
 		  ancestor::tei:note or
 		  ancestor::tei:front or
 		  ancestor::tei:back or
-		  ancestor::tei:p)">
+		  ancestor::tei:p or
+		  not(child::node()))">
       <xsl:text>
 	\pend% ending standard par
       </xsl:text>
@@ -2809,15 +2811,13 @@ the beginning of the document</desc>
 		</xsl:choose>
 	      </xsl:otherwise>
 	    </xsl:choose>
+	    <xsl:text>}</xsl:text>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:text>\hyperlink{</xsl:text>
-            <xsl:value-of select="node()"/>
-            <xsl:text>}{</xsl:text>
+	    <xsl:text>\textenglish{See →} </xsl:text>
             <xsl:value-of select="node()"/>
           </xsl:otherwise>
         </xsl:choose>
-        <xsl:text>}</xsl:text>
       </xsl:when>
       <xsl:when test="$style='head'">
 	<xsl:text>
