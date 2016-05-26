@@ -939,6 +939,7 @@ capable of dealing with UTF-8 directly.
     <xsl:if test="string-length($lemmawitness) > 0">
       <xsl:text> \cite{</xsl:text>
       <xsl:call-template  name="URIsToBibRefs">
+	<xsl:with-param name="element" select="."/>
 	<xsl:with-param name="targets" select="$lemmawitness" />
       </xsl:call-template>
       <xsl:text>} </xsl:text>
@@ -982,6 +983,7 @@ capable of dealing with UTF-8 directly.
 	  <xsl:if test="string-length(@wit) > 0">
 	    <xsl:text> \cite{</xsl:text>
 	    <xsl:call-template name="URIsToBibRefs">
+	      <xsl:with-param name="element" select="."/>
 	      <xsl:with-param name="targets" select="@wit"/>
 	    </xsl:call-template>
 	    <xsl:text>} </xsl:text>
@@ -1455,6 +1457,7 @@ the beginning of the document</desc>
 	      <xsl:value-of select="tei:escapeChars(@n, .)"/>
 	      <xsl:text>]{</xsl:text>
 	      <xsl:call-template name="URIsToBibRefs">
+		<xsl:with-param name="element" select="."/>
 		<xsl:with-param name="targets" select="@edRef"/>
 	      </xsl:call-template>
 	      <xsl:text>}</xsl:text>
@@ -1476,6 +1479,7 @@ the beginning of the document</desc>
 	      <xsl:when test="@edRef">
 		<xsl:text>\cite{</xsl:text>
 		<xsl:call-template name="URIsToBibRefs">
+		  <xsl:with-param name="element" select="."/>
 		  <xsl:with-param name="targets" select="@edRef"/>
 		</xsl:call-template>
 		<xsl:text>}</xsl:text>
@@ -2894,6 +2898,7 @@ the beginning of the document</desc>
 	    </xsl:if>
 	    <xsl:text>{</xsl:text>
 	    <xsl:call-template name="URIsToBibRefs">
+	      <xsl:with-param name="element" select="."/>
 	      <xsl:with-param name="targets" select="@target"/>
 	    </xsl:call-template>
 	    <xsl:text>}</xsl:text>
@@ -3113,12 +3118,14 @@ the beginning of the document</desc>
     </desc>
   </doc>
   <xsl:template name="URIsToBibRefs">
+    <xsl:param name="element" />
     <xsl:param name="targets" />
     <xsl:param name="separator">,</xsl:param>
     <xsl:variable name="refs">
       <refs>
 	<xsl:for-each select="tokenize(normalize-space($targets), '\s')">
-	  <ref><xsl:value-of select="substring-after(.,'#')"/></ref>
+	  <!-- normalize url to base, and then split: #1 is protocol+server+filename, #2 is the '#' part, if it exists -->
+	  <ref><xsl:value-of select="tokenize(resolve-uri(., base-uri($element)), '[?#&amp;]')[2]"/></ref>
 	</xsl:for-each>
       </refs>
     </xsl:variable>
