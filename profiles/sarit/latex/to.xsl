@@ -1574,6 +1574,9 @@ the beginning of the document</desc>
 	  <xsl:text>\edlabel{</xsl:text>
           <xsl:value-of select="@xml:id"/>
           <xsl:text>}</xsl:text>
+	  <xsl:text>\label{</xsl:text>
+          <xsl:value-of select="@xml:id"/>
+          <xsl:text>}</xsl:text>
 	</xsl:if>
 	<xsl:text>\lemma{</xsl:text>
 	<xsl:value-of select="$lemma"/>
@@ -1583,12 +1586,25 @@ the beginning of the document</desc>
       </xsl:when>
       <xsl:when test="@target">
         <xsl:text>\footnotetext{</xsl:text>
+	<xsl:if test="@xml:id">
+	  <xsl:text>\label{</xsl:text>
+          <xsl:value-of select="@xml:id"/>
+          <xsl:text>}</xsl:text>
+	</xsl:if>
         <xsl:apply-templates/>
         <xsl:text>}</xsl:text>
       </xsl:when>
       <xsl:when test="parent::tei:rdg">
         <xsl:call-template name="startLanguage"/>
 	<xsl:text> (Note:</xsl:text>
+	<xsl:if test="@xml:id">
+	  <xsl:text>\edlabel{</xsl:text>
+          <xsl:value-of select="@xml:id"/>
+          <xsl:text>}</xsl:text>
+	  <xsl:text>\label{</xsl:text>
+          <xsl:value-of select="@xml:id"/>
+          <xsl:text>}</xsl:text>
+	</xsl:if>
 	<xsl:apply-templates/>
 	<xsl:text>) </xsl:text>
 	<xsl:call-template name="endLanguage"/>
@@ -1654,6 +1670,18 @@ the beginning of the document</desc>
 	<xsl:text></xsl:text>
       </xsl:otherwise>
     </xsl:choose>
+    <xsl:if test="@xml:id">
+      <xsl:text>\label{</xsl:text>
+      <xsl:value-of select="@xml:id"/>
+      <xsl:text>}</xsl:text>
+      <xsl:if test="$ledmac='true' and
+		    (parent::tei:p or parent::tei:lg) and
+		    not(parent::tei:note)">
+	<xsl:text>\edlabel{</xsl:text>
+	<xsl:value-of select="@xml:id"/>
+	<xsl:text>}</xsl:text>	
+      </xsl:if>
+    </xsl:if>
     <xsl:if test="parent::tei:l and ancestor::tei:lg and not(preceding-sibling::tei:lb) and string-length(following-sibling::text()[0]) &gt; 8">
       <xsl:text>\\ </xsl:text>      
     </xsl:if>
@@ -3417,6 +3445,33 @@ the beginning of the document</desc>
        </xsl:when>
        <xsl:otherwise />
      </xsl:choose>
-   </xsl:template>   
+   </xsl:template>
+   <xsl:template match="tei:bibl">
+     <xsl:variable name="bibl" select="self::tei:bibl"/>
+     <xsl:variable name="refs">
+       <xsl:call-template name="URIsToBibRefs">
+	 <xsl:with-param name="element" select="."/>
+	 <xsl:with-param name="targets" select="@corresp"/>
+       </xsl:call-template>
+     </xsl:variable>
+     <xsl:for-each select="$refs">
+       <xsl:text>\cite</xsl:text>
+       <xsl:choose>
+	 <xsl:when test="$bibl/tei:citedRange">
+	   <xsl:text>[</xsl:text>
+	   <xsl:apply-templates select="$bibl/tei:citedRange"/>
+	   <xsl:text>]</xsl:text>
+	 </xsl:when>
+	 <xsl:when test="matches($bibl/text(), '^[0-9A-Za-z.:]+$')">
+	   <xsl:text>[</xsl:text>
+	   <xsl:apply-templates select="$bibl/text()"/>
+	   <xsl:text>]</xsl:text>
+	 </xsl:when>
+       </xsl:choose>
+       <xsl:text>{</xsl:text>
+       <xsl:value-of select="."/>
+       <xsl:text>}</xsl:text>
+     </xsl:for-each>
+   </xsl:template>
 </xsl:stylesheet>
 
