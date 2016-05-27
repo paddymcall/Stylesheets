@@ -60,13 +60,13 @@ of this software, even if advised of the possibility of such damage.
       <p>LaTeX paper size</p>
     </desc>
   </doc>
-  <xsl:param name="latexPaperSize">broadsheetpaper</xsl:param>
+  <xsl:param name="latexPaperSize">a4paper</xsl:param>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
     <desc>
       <p>Optimize space with savetrees</p>
     </desc>
   </doc>
-  <xsl:param name="savetrees" as="xs:boolean">true</xsl:param>
+  <xsl:param name="savetrees" as="xs:boolean">false</xsl:param>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="string">
     <desc>Optional parameters for documentclass</desc>
   </doc>
@@ -1027,10 +1027,12 @@ capable of dealing with UTF-8 directly.
 	    \begin{quote}
 	  </xsl:text>
 	</xsl:if>
-        <xsl:text>
+        <xsl:if test="not(child::tei:lg)">
+	  <xsl:text>
 	    
 	    \stanza[\smallbreak]
-	</xsl:text>
+	  </xsl:text>
+	</xsl:if>
 	<xsl:if test="@xml:id">
 	  <xsl:text>\label{</xsl:text>
           <xsl:value-of select="@xml:id"/>
@@ -1058,17 +1060,15 @@ capable of dealing with UTF-8 directly.
             <xsl:text>}}</xsl:text>
           </xsl:when>
         </xsl:choose>
-        <xsl:for-each select="tei:l">
-          <xsl:apply-templates/>
-          <xsl:if test="following-sibling::tei:l">
-            <xsl:text>&amp;</xsl:text>
-          </xsl:if>
-        </xsl:for-each>
+        <xsl:apply-templates/>
         <xsl:apply-templates select="tei:note"/>
-        <xsl:text>\&amp;[\smallbreak]
-
-
-	</xsl:text>
+	<xsl:if test="not(child::tei:lg)">
+	  <xsl:text>\&amp;[\smallbreak]
+	  
+	  
+	  </xsl:text>
+	</xsl:if>
+        
 	<xsl:if test="parent::tei:quote or parent::tei:q">
 	  <xsl:text>
 	    \end{quote}
@@ -1205,6 +1205,12 @@ the beginning of the document</desc>
             <xsl:text>}</xsl:text>
           </xsl:otherwise>
         </xsl:choose>
+      </xsl:when>
+      <xsl:when test="$ledmac='true' and ancestor::tei:lg">
+	<xsl:apply-templates/>
+	<xsl:if test="following-sibling::tei:l">
+          <xsl:text>&amp;</xsl:text>
+        </xsl:if>
       </xsl:when>
       <xsl:when test="(ancestor::tei:quote or ancestor::tei:q) and following-sibling::tei:l"><xsl:apply-templates/>\\
 	 </xsl:when>
@@ -2396,6 +2402,16 @@ the beginning of the document</desc>
   </doc>
   <xsl:template match="tei:quote">
     <xsl:call-template name="startLanguage"/>
+    <xsl:if test="@xml:id">
+      <xsl:text>\label{</xsl:text>
+      <xsl:value-of select="@xml:id"/>
+      <xsl:text>}</xsl:text>
+      <xsl:if test="$ledmac='true' and ancestor::tei:p or ancestor::tei:lg">
+	<xsl:text>\edlabel{</xsl:text>
+	<xsl:value-of select="@xml:id"/>
+	<xsl:text>}</xsl:text>	
+      </xsl:if>
+    </xsl:if>
     <xsl:choose>
       <xsl:when test="parent::tei:cit">
         <xsl:apply-templates/>
@@ -2605,17 +2621,30 @@ the beginning of the document</desc>
 	      
 	    </xsl:text>
 	  </xsl:if>
-	  <xsl:text>
-	    
-	    \pstart
-	    \begin{center}
-	  </xsl:text>
+	  <xsl:choose>
+	    <xsl:when test="parent::tei:lg">
+	      <xsl:text> &amp;</xsl:text>
+	    </xsl:when>
+	    <xsl:otherwise>
+	      <xsl:text>
+		
+		\pstart
+		\begin{center}
+	      </xsl:text>
+	    </xsl:otherwise>
+	  </xsl:choose>
 	  <xsl:apply-templates/>
-	  <xsl:text>
-	    \end{center}
-	    \pend
+	  <xsl:choose>
+	    <xsl:when test="parent::tei:lg"/>
+	    <xsl:otherwise>
+	      <xsl:text>
+		\end{center}
+		\pend
+		
+	      </xsl:text>
+	    </xsl:otherwise>
+	  </xsl:choose>
 	  
-	  </xsl:text>
 	  <xsl:if test="not(self::tei:label) and not(parent::tei:div or parent::tei:p or parent::tei:lg) and not(following-sibling::tei:trailer)">
 	    <xsl:text>
 	      
