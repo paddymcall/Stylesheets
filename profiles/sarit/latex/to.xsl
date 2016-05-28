@@ -678,7 +678,7 @@ capable of dealing with UTF-8 directly.
 	       <xsl:when test="$bibliography != ''">
 		 <xsl:text>
 		 \addbibresource</xsl:text>
-		 <xsl:if test="not(substring-before($bibliography, '://') = '') or not(substring-before($bibliography, '://') = 'file')">
+		 <xsl:if test="matches($bibliography, '://')">
 		   <xsl:text>[location=remote]</xsl:text>
 		 </xsl:if>
 		 <xsl:text>{</xsl:text>
@@ -1089,6 +1089,9 @@ capable of dealing with UTF-8 directly.
 		      $footnotes-as-critical-notes='true' and
 		      ancestor::tei:note">
 	<xsl:if test="@xml:id">
+	  <xsl:text>\label{</xsl:text>
+          <xsl:value-of select="@xml:id"/>
+          <xsl:text>}</xsl:text>
 	  <xsl:text>\edlabel{</xsl:text>
           <xsl:value-of select="@xml:id"/>
           <xsl:text>}</xsl:text>
