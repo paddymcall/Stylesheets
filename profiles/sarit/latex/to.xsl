@@ -796,6 +796,8 @@ capable of dealing with UTF-8 directly.
     <xsl:value-of select="$latexPaperSize"/>
     <xsl:text>]{</xsl:text>
     <xsl:value-of select="$documentclass"/>
+    <xsl:text>}%
+    </xsl:text>
     <xsl:text>
       %% useful for debugging
       %% \usepackage{syntonly}%
@@ -1062,7 +1064,7 @@ capable of dealing with UTF-8 directly.
           </xsl:when>
         </xsl:choose>
         <xsl:apply-templates/>
-        <xsl:apply-templates select="tei:note"/>
+
 	<xsl:if test="not(child::tei:lg)">
 	  <xsl:text>\&amp;[\smallbreak]
 	  
