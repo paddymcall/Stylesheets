@@ -187,9 +187,8 @@ capable of dealing with UTF-8 directly.
   <xsl:value-of select="$defaultlanguage"/>
   <xsl:text>}</xsl:text>
   <xsl:text>
-  % english should be available, notes and stuff
-  \setotherlanguage{english}
-  \setotherlanguage{german}
+  % english etc. should also be available, notes and bib
+  \setotherlanguages{english,german,italian,french}
   \setotherlanguage[numerals=arabic]{tibetan}
   \usepackage{fontspec}
   %% redefine some chars (either changed by parsing, or not commonly in font)
@@ -738,8 +737,11 @@ capable of dealing with UTF-8 directly.
        pdfauthor={<xsl:sequence select="replace(string-join(/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher,''),';','')"/>}]{hyperref}
        \hyperbaseurl{<xsl:value-of select="$baseURL"/>}
        \renewcommand\UrlFont{\rmlatinfont}
-       \usepackage[english]{cleveref}% clashes with eledmac &lt; 1.10.1!
-       % \newcommand{\cref}{\href}
+       \newcounter{parCount}
+       \setcounter{parCount}{0}
+       % cleveref should come last; note: also consider zref, this could become more useful than cleveref?
+       \usepackage[english]{cleveref}% clashes with eledmac &lt; 1.10.1 standard
+       \crefname{parCount}{§}{§§}
      </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -794,11 +796,10 @@ capable of dealing with UTF-8 directly.
     <xsl:value-of select="$latexPaperSize"/>
     <xsl:text>]{</xsl:text>
     <xsl:value-of select="$documentclass"/>
-    <xsl:text>}%
-    </xsl:text>
-    <xsl:text>\usepackage{syntonly}%
-    </xsl:text>
-    <xsl:text>%%\syntaxonly%
+    <xsl:text>
+      %% useful for debugging
+      %% \usepackage{syntonly}%
+      %%\syntaxonly%
     </xsl:text>
     <xsl:call-template name="latexSetup"/>
     <xsl:call-template name="latexPackages"/>
@@ -1308,10 +1309,19 @@ the beginning of the document</desc>
         </xsl:choose>
 	<xsl:text>
 
+	  \refstepcounter{parCount}
 	  \pstart \leavevmode% starting standard par
 	</xsl:text>
 	<xsl:if test="name(child::*[1]) = 'lg' or name(child::*[1]) = 'q' or name(child::*[1]) = 'quote'">
 	  <xsl:text>\hphantom{.}</xsl:text>
+	</xsl:if>
+	<xsl:if test="@xml:id">
+	  <xsl:text>\edlabel{</xsl:text>
+          <xsl:value-of select="@xml:id"/>
+          <xsl:text>}</xsl:text>
+	  <xsl:text>\label{</xsl:text>
+          <xsl:value-of select="@xml:id"/>
+          <xsl:text>}</xsl:text>
 	</xsl:if>
       </xsl:when>
       <xsl:when test="$ledmac='true' and
@@ -1343,6 +1353,7 @@ the beginning of the document</desc>
 		  ancestor::tei:p or
 		  not(child::node()))">
       <xsl:text>
+	{\color{gray}{\textsuperscript{§~\theparCount}}}
 	\pend% ending standard par
       </xsl:text>
       <xsl:if test="$leftside">
