@@ -734,8 +734,11 @@ capable of dealing with UTF-8 directly.
        </xsl:if>
        \usepackage[destlabel=true,% use labels as destination names; ; see dvipdfmx.cfg, option 0x0010, if using xelatex
        pdftitle={<xsl:sequence select="tei:generateSimpleTitle(.)"/>},
-       pdfauthor={<xsl:sequence select="replace(string-join(/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher,''),';','')"/>}]{hyperref}
-       \hyperbaseurl{<xsl:value-of select="$baseURL"/>}
+       pdfauthor={<xsl:sequence select="replace(string-join(/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher,''),';','')"/>},
+       unicode=true]{hyperref}
+       <xsl:if test="not($baseURL='')">
+	 \hyperbaseurl{<xsl:value-of select="$baseURL"/>}
+       </xsl:if>
        \renewcommand\UrlFont{\rmlatinfont}
        \newcounter{parCount}
        \setcounter{parCount}{0}
@@ -2388,7 +2391,7 @@ the beginning of the document</desc>
   </doc>
   <xsl:function name="tei:escapeURL" as="xs:string" override="yes">
     <xsl:param name="string"/>
-    <xsl:value-of select="replace($string, '#', '\\#')"/>
+    <xsl:value-of select="replace(escape-html-uri($string), '#', '\\#')"/>
   </xsl:function>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
     <desc>Escaping chars reserved in tex. We also substitute some
@@ -2519,21 +2522,24 @@ the beginning of the document</desc>
         <xsl:choose>
 	  <!-- Decide if this is a starred version. -->
 	  <!-- For frontmatter in memoir class, ignore numberFrontHeadings, since memoir deals with that. -->
-          <xsl:when test="not(@n) or
-			  parent::tei:body or
+          <xsl:when test="not(@n or parent::tei:div/@n) or
 			  ancestor::tei:floatingText or
 			  parent::tei:div/@rend='nonumber' or
 			  (ancestor::tei:back and $numberBackHeadings='') or
 			  (not($numberHeadings='true') and ancestor::tei:body) or
-			  (ancestor::tei:front and ($numberFrontHeadings='' and not($documentclass='memoir'))) or
-			  $depth &gt; 3">
+			  (ancestor::tei:front and ($numberFrontHeadings='' and not($documentclass='memoir')))">
 	    <xsl:text>*</xsl:text>
 	  </xsl:when>
+	  <!-- do nothing for part: takes no optional argument  -->
+	  <xsl:when test="parent::tei:div[@type='part']"/>
           <xsl:otherwise>[{<xsl:call-template name="makeHeadTOC"/>}]</xsl:otherwise>
         </xsl:choose>
-	<xsl:text>[{</xsl:text>
-	<xsl:call-template name="makeHeadTOC"/>
-	<xsl:text>}]</xsl:text>
+	<!-- do nothing for part: takes no optional argument  -->
+	<xsl:if test="not(parent::tei:div[@type='part'])">
+	  <xsl:text>[{</xsl:text>
+	  <xsl:call-template name="makeHeadTOC"/>
+	  <xsl:text>}]</xsl:text>
+	</xsl:if>
         <xsl:text>{</xsl:text>
 	<xsl:call-template name="startLanguage"/>
         <xsl:apply-templates mode="simple"/>
@@ -2872,9 +2878,7 @@ the beginning of the document</desc>
 	      </xsl:when>
 	      <xsl:otherwise>
 		<xsl:text>\href{</xsl:text>
-		<xsl:value-of select="$homeURL"/>
-		<xsl:value-of select="$cRef-query-string"/>
-		<xsl:value-of select="$cRef"/>
+		<xsl:value-of select="tei:escapeChars(tei:escapeURL(concat($homeURL, $cRef-query-string, $cRef)),.)"/>
 		<xsl:text>}{</xsl:text>
 		<xsl:choose>
 		  <xsl:when test="descendant-or-self::text()">
