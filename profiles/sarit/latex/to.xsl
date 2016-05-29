@@ -590,7 +590,7 @@ capable of dealing with UTF-8 directly.
     <xsl:choose>
       <xsl:when test="$ptr or $title=''">
         <xsl:text>\url{</xsl:text>
-        <xsl:sequence select="tei:escapeURL($dest)"/>
+        <xsl:sequence select="tei:escapeChars(tei:escapeURL($dest),.)"/>
         <xsl:text>}</xsl:text>
       </xsl:when>
       <xsl:otherwise>
