@@ -47,6 +47,7 @@ of this software, even if advised of the possibility of such damage.
     a content versioning system.</desc>
   </doc>
   <xsl:param name="revision">HEAD</xsl:param>
+  <xsl:param name="revurl">https://github.com/paddymcall/SARIT-pdf-conversions/commit/</xsl:param>
   <xsl:param name="useHeaderFrontMatter">true</xsl:param>
   <xsl:param name="debuglatex">true</xsl:param>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" type="directory-path">
@@ -109,9 +110,11 @@ of this software, even if advised of the possibility of such damage.
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
     <p>This bibliography value is only used when no other bibliography
     can be found. Currently searches for, and prefers,
-    //listBibl[@corresp] values.</p>
+    //listBibl[@corresp] values. If the string contains a
+    '---revision-spec---', that will be replaced with the value of the
+    revision param.</p>
   </doc>
-  <xsl:param name="bibliography">https://raw.githubusercontent.com/paddymcall/Stylesheets/---revision-spec---/profiles/sarit/latex/bib/sarit.bib</xsl:param>
+  <xsl:param name="bibliography">https://raw.githubusercontent.com/paddymcall/Stylesheets/HEAD/profiles/sarit/latex/bib/sarit.bib</xsl:param>
   <xsl:param name="usetitling">true</xsl:param>
   <xsl:param name="leftside" as="xs:boolean">false</xsl:param>
   <xsl:param name="rightside" as="xs:boolean">false</xsl:param>
@@ -718,8 +721,12 @@ capable of dealing with UTF-8 directly.
 	   % pagestyles
 	   \pagestyle{ruled}
 	   <!-- \makeoddhead{ruled}{{\small\rmlatinfont <xsl:value-of select="tei:generateSimpleTitle(.)"/>}}{}{} -->
-	   \makeoddfoot{ruled}{{\tiny\rmlatinfont \textit{Compiled: \today}}}{}{\rmlatinfont\thepage}
-	   \makeevenfoot{ruled}{\rmlatinfont\thepage}{}{{\tiny\rmlatinfont \textit{Compiled: \today}}}
+	   \makeoddfoot{ruled}{{\tiny\rmlatinfont \textit{Compiled: \today}}}{%
+	   <xsl:if test="$revision">{\tiny\rmlatinfont \textit{Revision: \href{<xsl:value-of select="concat($revurl, $revision)"/>}{<xsl:value-of select="$revision"/>}}}</xsl:if>%
+	   }{\rmlatinfont\thepage}
+	   \makeevenfoot{ruled}{\rmlatinfont\thepage}{%
+	   <xsl:if test="$revision">{\tiny\rmlatinfont \textit{Revision: \href{<xsl:value-of select="concat($revurl, $revision)"/>}{<xsl:value-of select="$revision"/>}}}</xsl:if>%
+	   }{{\tiny\rmlatinfont \textit{Compiled: \today}}}
 	   
 	 </xsl:when>
 	 <xsl:otherwise>
@@ -793,7 +800,9 @@ capable of dealing with UTF-8 directly.
 %ENDFIGMAP
 </xsl:text>
     </xsl:if>
-    <xsl:text>\documentclass[</xsl:text>
+    <xsl:text>%% require snapshot package to record versions to log files
+    \RequirePackage[log]{snapshot}
+    \documentclass[</xsl:text>
     <xsl:value-of select="$classParameters"/>
     <xsl:text>,</xsl:text>
     <xsl:value-of select="$latexPaperSize"/>
@@ -1361,7 +1370,7 @@ the beginning of the document</desc>
 		  ancestor::tei:p or
 		  not(child::node()))">
       <xsl:text>
-	{\color{gray}{\textsuperscript{§~\theparCount}}}
+	{\color{gray}{\rmlatinfont\textsuperscript{§~\theparCount}}}
 	\pend% ending standard par
       </xsl:text>
       <xsl:if test="$leftside">
@@ -2522,9 +2531,9 @@ the beginning of the document</desc>
         <xsl:choose>
 	  <!-- Decide if this is a starred version. -->
 	  <!-- For frontmatter in memoir class, ignore numberFrontHeadings, since memoir deals with that. -->
-          <xsl:when test="not(@n or parent::tei:div/@n) or
-			  ancestor::tei:floatingText or
+          <xsl:when test="ancestor::tei:floatingText or
 			  parent::tei:div/@rend='nonumber' or
+			  self::tei:head/@rend='nonumber' or
 			  (ancestor::tei:back and $numberBackHeadings='') or
 			  (not($numberHeadings='true') and ancestor::tei:body) or
 			  (ancestor::tei:front and ($numberFrontHeadings='' and not($documentclass='memoir')))">
