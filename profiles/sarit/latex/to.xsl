@@ -598,7 +598,7 @@ capable of dealing with UTF-8 directly.
       </xsl:when>
       <xsl:otherwise>
         <xsl:text>\href{</xsl:text>
-        <xsl:value-of select="tei:escapeURL($dest)"/>
+        <xsl:value-of select="tei:escapeChars(tei:escapeURL($dest),.)"/>
         <xsl:text>}{</xsl:text>
 	<xsl:value-of select="tei:escapeChars($title,.)"/>
         <xsl:text>}</xsl:text>
@@ -2992,6 +2992,7 @@ the beginning of the document</desc>
           <xsl:otherwise>
             <xsl:for-each select="tokenize(normalize-space(@target),' ')">
               <xsl:variable name="a" select="."/>
+	      <xsl:message>Making link for <xsl:value-of select="$a"/></xsl:message>
               <xsl:for-each select="$here">
                 <xsl:choose>
                   <!-- If there is a target attribute starting with #, it is always a local reference -->
