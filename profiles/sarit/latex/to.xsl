@@ -47,6 +47,7 @@ of this software, even if advised of the possibility of such damage.
     a content versioning system.</desc>
   </doc>
   <xsl:param name="revision">HEAD</xsl:param>
+  <xsl:param name="revurl">https://github.com/paddymcall/SARIT-pdf-conversions/commit/</xsl:param>
   <xsl:param name="useHeaderFrontMatter">true</xsl:param>
   <xsl:param name="debuglatex">true</xsl:param>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" type="directory-path">
@@ -109,9 +110,11 @@ of this software, even if advised of the possibility of such damage.
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
     <p>This bibliography value is only used when no other bibliography
     can be found. Currently searches for, and prefers,
-    //listBibl[@corresp] values.</p>
+    //listBibl[@corresp] values. If the string contains a
+    '---revision-spec---', that will be replaced with the value of the
+    revision param.</p>
   </doc>
-  <xsl:param name="bibliography">https://raw.githubusercontent.com/paddymcall/Stylesheets/---revision-spec---/profiles/sarit/latex/bib/sarit.bib</xsl:param>
+  <xsl:param name="bibliography">https://raw.githubusercontent.com/paddymcall/Stylesheets/HEAD/profiles/sarit/latex/bib/sarit.bib</xsl:param>
   <xsl:param name="usetitling">true</xsl:param>
   <xsl:param name="leftside" as="xs:boolean">false</xsl:param>
   <xsl:param name="rightside" as="xs:boolean">false</xsl:param>
@@ -187,9 +190,8 @@ capable of dealing with UTF-8 directly.
   <xsl:value-of select="$defaultlanguage"/>
   <xsl:text>}</xsl:text>
   <xsl:text>
-  % english should be available, notes and stuff
-  \setotherlanguage{english}
-  \setotherlanguage{german}
+  % english etc. should also be available, notes and bib
+  \setotherlanguages{english,german,italian,french}
   \setotherlanguage[numerals=arabic]{tibetan}
   \usepackage{fontspec}
   %% redefine some chars (either changed by parsing, or not commonly in font)
@@ -591,7 +593,7 @@ capable of dealing with UTF-8 directly.
     <xsl:choose>
       <xsl:when test="$ptr or $title=''">
         <xsl:text>\url{</xsl:text>
-        <xsl:sequence select="tei:escapeURL($dest)"/>
+        <xsl:sequence select="tei:escapeChars(tei:escapeURL($dest),.)"/>
         <xsl:text>}</xsl:text>
       </xsl:when>
       <xsl:otherwise>
@@ -679,7 +681,7 @@ capable of dealing with UTF-8 directly.
 	       <xsl:when test="$bibliography != ''">
 		 <xsl:text>
 		 \addbibresource</xsl:text>
-		 <xsl:if test="not(substring-before($bibliography, '://') = '') or not(substring-before($bibliography, '://') = 'file')">
+		 <xsl:if test="matches($bibliography, '://')">
 		   <xsl:text>[location=remote]</xsl:text>
 		 </xsl:if>
 		 <xsl:text>{</xsl:text>
@@ -719,8 +721,12 @@ capable of dealing with UTF-8 directly.
 	   % pagestyles
 	   \pagestyle{ruled}
 	   <!-- \makeoddhead{ruled}{{\small\rmlatinfont <xsl:value-of select="tei:generateSimpleTitle(.)"/>}}{}{} -->
-	   \makeoddfoot{ruled}{{\tiny\rmlatinfont \textit{Compiled: \today}}}{}{\rmlatinfont\thepage}
-	   \makeevenfoot{ruled}{\rmlatinfont\thepage}{}{{\tiny\rmlatinfont \textit{Compiled: \today}}}
+	   \makeoddfoot{ruled}{{\tiny\rmlatinfont \textit{Compiled: \today}}}{%
+	   <xsl:if test="$revision">{\tiny\rmlatinfont \textit{Revision: \href{<xsl:value-of select="concat($revurl, $revision)"/>}{<xsl:value-of select="$revision"/>}}}</xsl:if>%
+	   }{\rmlatinfont\thepage}
+	   \makeevenfoot{ruled}{\rmlatinfont\thepage}{%
+	   <xsl:if test="$revision">{\tiny\rmlatinfont \textit{Revision: \href{<xsl:value-of select="concat($revurl, $revision)"/>}{<xsl:value-of select="$revision"/>}}}</xsl:if>%
+	   }{{\tiny\rmlatinfont \textit{Compiled: \today}}}
 	   
 	 </xsl:when>
 	 <xsl:otherwise>
@@ -735,11 +741,17 @@ capable of dealing with UTF-8 directly.
        </xsl:if>
        \usepackage[destlabel=true,% use labels as destination names; ; see dvipdfmx.cfg, option 0x0010, if using xelatex
        pdftitle={<xsl:sequence select="tei:generateSimpleTitle(.)"/>},
-       pdfauthor={<xsl:sequence select="replace(string-join(/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher,''),';','')"/>}]{hyperref}
-       \hyperbaseurl{<xsl:value-of select="$baseURL"/>}
+       pdfauthor={<xsl:sequence select="replace(string-join(/tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:publisher,''),';','')"/>},
+       unicode=true]{hyperref}
+       <xsl:if test="not($baseURL='')">
+	 \hyperbaseurl{<xsl:value-of select="$baseURL"/>}
+       </xsl:if>
        \renewcommand\UrlFont{\rmlatinfont}
-       \usepackage[english]{cleveref}% clashes with eledmac &lt; 1.10.1!
-       % \newcommand{\cref}{\href}
+       \newcounter{parCount}
+       \setcounter{parCount}{0}
+       % cleveref should come last; note: also consider zref, this could become more useful than cleveref?
+       \usepackage[english]{cleveref}% clashes with eledmac &lt; 1.10.1 standard
+       \crefname{parCount}{§}{§§}
      </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -788,7 +800,9 @@ capable of dealing with UTF-8 directly.
 %ENDFIGMAP
 </xsl:text>
     </xsl:if>
-    <xsl:text>\documentclass[</xsl:text>
+    <xsl:text>%% require snapshot package to record versions to log files
+    \RequirePackage[log]{snapshot}
+    \documentclass[</xsl:text>
     <xsl:value-of select="$classParameters"/>
     <xsl:text>,</xsl:text>
     <xsl:value-of select="$latexPaperSize"/>
@@ -796,9 +810,10 @@ capable of dealing with UTF-8 directly.
     <xsl:value-of select="$documentclass"/>
     <xsl:text>}%
     </xsl:text>
-    <xsl:text>\usepackage{syntonly}%
-    </xsl:text>
-    <xsl:text>%%\syntaxonly%
+    <xsl:text>
+      %% useful for debugging
+      %% \usepackage{syntonly}%
+      %%\syntaxonly%
     </xsl:text>
     <xsl:call-template name="latexSetup"/>
     <xsl:call-template name="latexPackages"/>
@@ -1061,7 +1076,7 @@ capable of dealing with UTF-8 directly.
           </xsl:when>
         </xsl:choose>
         <xsl:apply-templates/>
-        <xsl:apply-templates select="tei:note"/>
+
 	<xsl:if test="not(child::tei:lg)">
 	  <xsl:text>\&amp;[\smallbreak]
 	  
@@ -1086,6 +1101,9 @@ capable of dealing with UTF-8 directly.
 		      $footnotes-as-critical-notes='true' and
 		      ancestor::tei:note">
 	<xsl:if test="@xml:id">
+	  <xsl:text>\label{</xsl:text>
+          <xsl:value-of select="@xml:id"/>
+          <xsl:text>}</xsl:text>
 	  <xsl:text>\edlabel{</xsl:text>
           <xsl:value-of select="@xml:id"/>
           <xsl:text>}</xsl:text>
@@ -1308,10 +1326,19 @@ the beginning of the document</desc>
         </xsl:choose>
 	<xsl:text>
 
+	  \refstepcounter{parCount}
 	  \pstart \leavevmode% starting standard par
 	</xsl:text>
 	<xsl:if test="name(child::*[1]) = 'lg' or name(child::*[1]) = 'q' or name(child::*[1]) = 'quote'">
 	  <xsl:text>\hphantom{.}</xsl:text>
+	</xsl:if>
+	<xsl:if test="@xml:id">
+	  <xsl:text>\edlabel{</xsl:text>
+          <xsl:value-of select="@xml:id"/>
+          <xsl:text>}</xsl:text>
+	  <xsl:text>\label{</xsl:text>
+          <xsl:value-of select="@xml:id"/>
+          <xsl:text>}</xsl:text>
 	</xsl:if>
       </xsl:when>
       <xsl:when test="$ledmac='true' and
@@ -1343,6 +1370,7 @@ the beginning of the document</desc>
 		  ancestor::tei:p or
 		  not(child::node()))">
       <xsl:text>
+	{\color{gray}{\rmlatinfont\textsuperscript{§~\theparCount}}}
 	\pend% ending standard par
       </xsl:text>
       <xsl:if test="$leftside">
@@ -2372,7 +2400,7 @@ the beginning of the document</desc>
   </doc>
   <xsl:function name="tei:escapeURL" as="xs:string" override="yes">
     <xsl:param name="string"/>
-    <xsl:value-of select="replace($string, '#', '\\#')"/>
+    <xsl:value-of select="replace(escape-html-uri($string), '#', '\\#')"/>
   </xsl:function>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
     <desc>Escaping chars reserved in tex. We also substitute some
@@ -2503,21 +2531,24 @@ the beginning of the document</desc>
         <xsl:choose>
 	  <!-- Decide if this is a starred version. -->
 	  <!-- For frontmatter in memoir class, ignore numberFrontHeadings, since memoir deals with that. -->
-          <xsl:when test="not(@n) or
-			  parent::tei:body or
-			  ancestor::tei:floatingText or
+          <xsl:when test="ancestor::tei:floatingText or
 			  parent::tei:div/@rend='nonumber' or
+			  self::tei:head/@rend='nonumber' or
 			  (ancestor::tei:back and $numberBackHeadings='') or
 			  (not($numberHeadings='true') and ancestor::tei:body) or
-			  (ancestor::tei:front and ($numberFrontHeadings='' and not($documentclass='memoir'))) or
-			  $depth &gt; 3">
+			  (ancestor::tei:front and ($numberFrontHeadings='' and not($documentclass='memoir')))">
 	    <xsl:text>*</xsl:text>
 	  </xsl:when>
+	  <!-- do nothing for part: takes no optional argument  -->
+	  <xsl:when test="parent::tei:div[@type='part']"/>
           <xsl:otherwise>[{<xsl:call-template name="makeHeadTOC"/>}]</xsl:otherwise>
         </xsl:choose>
-	<xsl:text>[{</xsl:text>
-	<xsl:call-template name="makeHeadTOC"/>
-	<xsl:text>}]</xsl:text>
+	<!-- do nothing for part: takes no optional argument  -->
+	<xsl:if test="not(parent::tei:div[@type='part'])">
+	  <xsl:text>[{</xsl:text>
+	  <xsl:call-template name="makeHeadTOC"/>
+	  <xsl:text>}]</xsl:text>
+	</xsl:if>
         <xsl:text>{</xsl:text>
 	<xsl:call-template name="startLanguage"/>
         <xsl:apply-templates mode="simple"/>
@@ -2856,9 +2887,7 @@ the beginning of the document</desc>
 	      </xsl:when>
 	      <xsl:otherwise>
 		<xsl:text>\href{</xsl:text>
-		<xsl:value-of select="$homeURL"/>
-		<xsl:value-of select="$cRef-query-string"/>
-		<xsl:value-of select="$cRef"/>
+		<xsl:value-of select="tei:escapeChars(tei:escapeURL(concat($homeURL, $cRef-query-string, $cRef)),.)"/>
 		<xsl:text>}{</xsl:text>
 		<xsl:choose>
 		  <xsl:when test="descendant-or-self::text()">
