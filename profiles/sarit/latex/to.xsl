@@ -1037,11 +1037,6 @@ capable of dealing with UTF-8 directly.
 	    \pend% close preceding par
 	  </xsl:text>
 	</xsl:if>
-	<xsl:if test="parent::tei:quote or parent::tei:q">
-	  <xsl:text>
-	    \begin{quote}
-	  </xsl:text>
-	</xsl:if>
         <xsl:if test="not(child::tei:lg)">
 	  <xsl:text>
 	    
@@ -1075,8 +1070,13 @@ capable of dealing with UTF-8 directly.
             <xsl:text>}}</xsl:text>
           </xsl:when>
         </xsl:choose>
+	<xsl:if test="parent::tei:quote or parent::tei:q">
+	  <xsl:text>{\normalfontlatin\large ``}</xsl:text>
+	</xsl:if>
         <xsl:apply-templates/>
-
+	<xsl:if test="parent::tei:quote or parent::tei:q">
+	  <xsl:text>{\normalfontlatin\large "}</xsl:text>
+	</xsl:if>
 	<xsl:if test="not(child::tei:lg)">
 	  <xsl:text>\&amp;[\smallbreak]
 	  
@@ -1084,11 +1084,7 @@ capable of dealing with UTF-8 directly.
 	  </xsl:text>
 	</xsl:if>
         
-	<xsl:if test="parent::tei:quote or parent::tei:q">
-	  <xsl:text>
-	    \end{quote}
-	  </xsl:text>
-	</xsl:if>
+	
 	<xsl:if test="ancestor::tei:p and
 		      not(following-sibling::tei:lg)">
 	  <xsl:text>
@@ -1577,7 +1573,7 @@ the beginning of the document</desc>
         <xsl:apply-templates/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:message>hello</xsl:message>
+        <xsl:message>Default quote environment</xsl:message>
         <xsl:value-of select="$preQuote"/>
         <xsl:apply-templates/>
         <xsl:value-of select="$postQuote"/>
