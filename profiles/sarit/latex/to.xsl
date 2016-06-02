@@ -2828,6 +2828,7 @@ the beginning of the document</desc>
     <xsl:param name="after"/>
     <xsl:value-of select="$before"/>
     <xsl:sequence select="tei:makeHyperTarget(@xml:id)"/>
+    <xsl:call-template name="startLanguage"/>
     <xsl:choose>
       <xsl:when test="$style=('add','unclear','bibl','docAuthor','titlem','italic','mentioned','term','foreign')">
         <xsl:text>\textit{</xsl:text>
@@ -2920,6 +2921,7 @@ the beginning of the document</desc>
         <xsl:text>}</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
+    <xsl:call-template name="endLanguage"/>
     <xsl:value-of select="$after"/>
   </xsl:template>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
@@ -3528,5 +3530,6 @@ the beginning of the document</desc>
        <xsl:text>}</xsl:text>
      </xsl:for-each>
    </xsl:template>
+   
 </xsl:stylesheet>
 
