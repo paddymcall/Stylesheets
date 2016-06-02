@@ -1071,11 +1071,11 @@ capable of dealing with UTF-8 directly.
           </xsl:when>
         </xsl:choose>
 	<xsl:if test="parent::tei:quote or parent::tei:q">
-	  <xsl:text>{\normalfontlatin\large ``}</xsl:text>
+	  <xsl:text>{\normalfontlatin\large ``\qquad}</xsl:text>
 	</xsl:if>
         <xsl:apply-templates/>
 	<xsl:if test="parent::tei:quote or parent::tei:q">
-	  <xsl:text>{\normalfontlatin\large "}</xsl:text>
+	  <xsl:text>{\normalfontlatin\large\qquad{}"}</xsl:text>
 	</xsl:if>
 	<xsl:if test="not(child::tei:lg)">
 	  <xsl:text>\&amp;[\smallbreak]

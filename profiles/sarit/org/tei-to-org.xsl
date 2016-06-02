@@ -237,7 +237,7 @@
     </xsl:if>
     <xsl:call-template name="newline"/>
     <xsl:choose>
-      <xsl:when test="fn:upper-case($style)='SRC' and $extras='nxml'">
+      <xsl:when test="fn:upper-case($style)='SRC' and ($extras='nxml' or $extras='xml')">
 	<!-- just output xml here -->
 	<xsl:copy-of select="saxon:serialize(., 'xmlout')"/>
       </xsl:when>
@@ -366,10 +366,14 @@
     </xsl:choose>
   </xsl:template>
 
+  <xsl:template match="tei:app" />
+  <xsl:template match="tei:listApp" />
+
   <xsl:template match="tei:app" mode="note">
     <xsl:call-template name="newline"/>
-    <xsl:text>⋆⋆ </xsl:text>
-    <xsl:text>App entry: </xsl:text>
+    <xsl:text>[fn:c-</xsl:text>
+    <xsl:value-of select="@xml:id"/>
+    <xsl:text>] App entry: </xsl:text>
     <xsl:choose>
       <xsl:when test=".//lem">
 	<xsl:value-of select="(.//lem)[1]"/>
@@ -402,12 +406,33 @@
       </xsl:call-template>
     </xsl:if>
     <xsl:call-template name="newline"/>
+    <xsl:apply-templates/>
+    <xsl:call-template name="newline"/>
     <xsl:call-template name="makeBlock">
       <xsl:with-param name="style" select="'SRC'"/>
-      <xsl:with-param name="extras" select="'nxml'"/>
+      <xsl:with-param name="extras" select="'xml'"/>
     </xsl:call-template>
+    <xsl:call-template name="newline"/>
+    <xsl:call-template name="newline"/>
   </xsl:template>
 
+  <xsl:template match="tei:rdg|tei:lem">
+    <xsl:text>- </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text>: </xsl:text>
+    <xsl:apply-templates />
+    <xsl:if test="@wit or @cit">
+      <xsl:text> ([[</xsl:text>
+      <xsl:value-of select="@wit"/>
+      <xsl:value-of select="@cit"/>
+      <xsl:text>][</xsl:text>
+      <xsl:value-of select="@wit"/>
+      <xsl:value-of select="@cit"/>
+      <xsl:text>]])</xsl:text>
+    </xsl:if>
+    <xsl:call-template name="newline"/>
+  </xsl:template>
+  
   <xsl:template match="tei:note">
     <!-- Putting in a zero width joiner since it won't work at beginning of line. -->
     <xsl:text>&#8205;[fn:</xsl:text>
@@ -474,12 +499,16 @@
     <xsl:apply-templates select="/tei:TEI" mode="note"/>
   </xsl:template>
 
-
   <xsl:template name="insertTarget">
     <xsl:param name="target"/>
     <xsl:text>&lt;&lt;</xsl:text>
     <xsl:value-of select="$target"/>
     <xsl:text>&gt;&gt;</xsl:text>
+    <xsl:for-each select="//tei:app[@to=concat('#', $target)]">
+      <xsl:text>[fn:c-</xsl:text>
+      <xsl:value-of select="@xml:id"/>
+      <xsl:text>]</xsl:text>
+    </xsl:for-each>
   </xsl:template>
   
 </xsl:stylesheet>
