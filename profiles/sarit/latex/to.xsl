@@ -2606,7 +2606,6 @@ the beginning of the document</desc>
 	<xsl:if test="$depth = $ledmacNumberDepth">
 	  <xsl:text>
 	    
-	    \begingroup
 	    \beginnumbering% beginning numbering from div depth=0
 	    
 	  </xsl:text>
@@ -2623,7 +2622,6 @@ the beginning of the document</desc>
 	  <xsl:text>
 	    
 	    \endnumbering% ending numbering from div
-	    \endgroup
 	    
 	  </xsl:text>
 	</xsl:if>
