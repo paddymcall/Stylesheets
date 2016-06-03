@@ -854,6 +854,7 @@ capable of dealing with UTF-8 directly.
        \def\select@lemmafont#1|#2|#3|#4|#5|#6|#7|%
        {}
        \makeatother
+       \AtEveryPstart{\refstepcounter{parCount}}
        \setlength{\stanzaindentbase}{20pt}
      \setstanzaindents{3,</xsl:text>
     <xsl:for-each select="1 to tei:maxstanzalines(.)">
@@ -1322,7 +1323,7 @@ the beginning of the document</desc>
         </xsl:choose>
 	<xsl:text>
 
-	  \refstepcounter{parCount}
+	  
 	  \pstart \leavevmode% starting standard par
 	</xsl:text>
 	<xsl:if test="name(child::*[1]) = 'lg' or name(child::*[1]) = 'q' or name(child::*[1]) = 'quote'">
