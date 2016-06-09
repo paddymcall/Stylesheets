@@ -192,7 +192,20 @@ capable of dealing with UTF-8 directly.
   <xsl:text>
   % english etc. should also be available, notes and bib
   \setotherlanguages{english,german,italian,french}
-  \setotherlanguage[numerals=arabic]{tibetan}
+  </xsl:text>
+  <xsl:choose>
+    <xsl:when test="$defaultlanguage != 'tibetan'">
+      <xsl:text>
+	\setotherlanguage[numerals=arabic]{tibetan}
+      </xsl:text>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:text>
+	\setotherlanguage{sanskrit}
+      </xsl:text>
+    </xsl:otherwise>
+  </xsl:choose>
+  <xsl:text>
   \usepackage{fontspec}
   %% redefine some chars (either changed by parsing, or not commonly in font)
   \catcode`⃥=\active \def⃥{\textbackslash}
@@ -720,7 +733,7 @@ capable of dealing with UTF-8 directly.
 	 <xsl:when test="$documentclass='memoir'">
 	   % pagestyles
 	   \pagestyle{ruled}
-	   <!-- \makeoddhead{ruled}{{\small\rmlatinfont <xsl:value-of select="tei:generateSimpleTitle(.)"/>}}{}{} -->
+	   \makeoddhead{ruled}{{<xsl:value-of select="tei:generateShortTitle(.)"/>}}{}{          <xsl:sequence select="tei:generateAuthor(.)"/>}
 	   \makeoddfoot{ruled}{{\tiny\rmlatinfont \textit{Compiled: \today}}}{%
 	   <xsl:if test="$revision">{\tiny\rmlatinfont \textit{Revision: \href{<xsl:value-of select="concat($revurl, $revision)"/>}{<xsl:value-of select="$revision"/>}}}</xsl:if>%
 	   }{\rmlatinfont\thepage}
@@ -1550,14 +1563,14 @@ the beginning of the document</desc>
         <xsl:choose>
           <xsl:when test="@type='pratīka' or @type='lemma'">
 	    <xsl:choose>
-	      <xsl:when test="//tei:p or //tei:lg" />
+	      <xsl:when test="./tei:p or ./tei:lg" />
 	      <xsl:otherwise>
 		<xsl:text>\quotelemma{</xsl:text>				  
 	      </xsl:otherwise>
 	    </xsl:choose>
             <xsl:apply-templates/>
             <xsl:choose>
-	      <xsl:when test="//tei:p or //tei:lg"/>
+	      <xsl:when test="./tei:p or ./tei:lg"/>
 	      <xsl:otherwise>
 		<xsl:text>}</xsl:text>				  
 	      </xsl:otherwise>
@@ -1871,7 +1884,7 @@ the beginning of the document</desc>
     <xsl:if test="@xml:lang">
       <xsl:choose>
 	<xsl:when test="self::tei:head">
-	  <xsl:text>{\protect\text</xsl:text>
+	  <xsl:text>{\protect{\text</xsl:text>
 	</xsl:when>
 	<xsl:otherwise>
 	  <xsl:text>\begin{</xsl:text>
@@ -1902,7 +1915,7 @@ the beginning of the document</desc>
     <xsl:if test="@xml:lang">
       <xsl:choose>
 	<xsl:when test="self::tei:head">
-	  <xsl:text>}</xsl:text>
+	  <xsl:text>}}</xsl:text>
 	</xsl:when>
 	<xsl:otherwise>
 	  <xsl:choose>
@@ -2693,7 +2706,29 @@ the beginning of the document</desc>
 	  </xsl:text>
 	</xsl:otherwise>
       </xsl:choose>
-  </xsl:template>
+    </xsl:template>
+  <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+    <desc>
+      <p>Title gen</p>
+      <p>Generate short title for LaTeX</p>
+    </desc>
+  </doc>    
+  <xsl:function name="tei:generateShortTitle">
+    <xsl:param name="context"/>
+    <xsl:choose>
+      <xsl:when test="$context/ancestor-or-self::tei:TEI/tei:teiHeader//tei:titleStmt/tei:title[matches(@type, 'short')]">
+	<xsl:for-each select="$context/ancestor-or-self::tei:TEI/tei:teiHeader//tei:titleStmt/tei:title[matches(@type, 'short')]">
+	  <xsl:apply-templates select="."/>
+	</xsl:for-each>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:for-each select="$context/ancestor-or-self::tei:TEI/tei:teiHeader//tei:titleStmt/tei:title[not(matches(@type, 'sub') or matches(@type, 'pre'))]">
+	  <xsl:message>Doing title <xsl:value-of select="."/></xsl:message>
+	  <xsl:apply-templates select="."/>
+	</xsl:for-each>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:function>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
     <desc>
       <p>[common] </p>
@@ -2708,7 +2743,7 @@ the beginning of the document</desc>
           <xsl:apply-templates select="ancestor-or-self::tei:TEI/tei:text/tei:front//tei:docTitle" mode="simple"/>
         </xsl:when>
         <xsl:when test="ancestor-or-self::tei:teiCorpus">
-          <xsl:apply-templates select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type='subordinate')]" mode="simple"/>
+          <xsl:apply-templates select="tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[matches(@type, 'sub')]" mode="simple"/>
         </xsl:when>
         <xsl:otherwise>
           <xsl:for-each select="ancestor-or-self::tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt">
@@ -3332,11 +3367,6 @@ the beginning of the document</desc>
       <desc>Process element q</desc>
    </doc>
    <xsl:template match="tei:q|tei:said">
-     <xsl:if test="@type='lemma'">
-       <xsl:text>{\color{</xsl:text>
-       <xsl:value-of select="$lemmaColor"/>
-       <xsl:text>}</xsl:text>
-     </xsl:if>
      <xsl:choose>
        <xsl:when test="not(tei:isInline(.)) and not(parent::tei:p and $ledmac='true')">
 	 <xsl:text>&#10;\begin{</xsl:text><xsl:value-of select="$quoteEnv"/><xsl:text>}</xsl:text>
@@ -3347,14 +3377,6 @@ the beginning of the document</desc>
 	 <xsl:call-template name="makeQuote"/>
        </xsl:otherwise>
      </xsl:choose>
-     <xsl:if test="@type='lemma'">
-       <xsl:text>}</xsl:text>
-       <xsl:if test="following::node()[1][
-		     self::text() and
-		     matches(self::text(), '^[^\s ]')]">
-	 <xsl:text></xsl:text>
-       </xsl:if>
-     </xsl:if>
    </xsl:template>
    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
       <desc>Process element emph</desc>
