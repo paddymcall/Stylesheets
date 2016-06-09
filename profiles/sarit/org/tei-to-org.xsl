@@ -333,14 +333,18 @@
   </xsl:template>
 
   <xsl:template match="/tei:TEI" mode="note">
-    <xsl:call-template name="newline"/>
-    <xsl:text>⋆ Text-Critical Notes</xsl:text>
-    <xsl:call-template name="newline"/>
-    <xsl:apply-templates select="//tei:app" mode="note"/>
-    <xsl:call-template name="newline"/>
-    <xsl:text>⋆ Footnotes</xsl:text>
-    <xsl:call-template name="newline"/>
-    <xsl:apply-templates select="//tei:note[not(ancestor::tei:app)]" mode="note" />
+    <xsl:if test="count(//tei:app) > 0">
+      <xsl:call-template name="newline"/>
+      <xsl:text>⋆ Text-Critical Notes</xsl:text>
+      <xsl:call-template name="newline"/>
+      <xsl:apply-templates select="//tei:app" mode="note"/>
+    </xsl:if>
+    <xsl:if test="count(//tei:note[not(ancestor::tei:app)]) > 0">
+      <xsl:call-template name="newline"/>
+      <xsl:text>⋆ Footnotes</xsl:text>
+      <xsl:call-template name="newline"/>
+      <xsl:apply-templates select="//tei:note[not(ancestor::tei:app)]" mode="note" />
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="makeOrgLink">
@@ -435,7 +439,8 @@
   
   <xsl:template match="tei:note">
     <!-- Putting in a zero width joiner since it won't work at beginning of line. -->
-    <xsl:text>&#8205;[fn:</xsl:text>
+    <xsl:text>&#8205;</xsl:text>
+    <xsl:text>[fn:</xsl:text>
     <xsl:number level="any" count="tei:note"/>
     <xsl:text>]</xsl:text>
   </xsl:template>
