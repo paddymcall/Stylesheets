@@ -3131,7 +3131,16 @@ the beginning of the document</desc>
       <xsl:if test="tei:render-strike(.)">\sout </xsl:if>
       <xsl:if test="tei:render-italic(.)">\textit </xsl:if>
       <xsl:if test="tei:render-bold(.)">\textbf </xsl:if>
-      <xsl:if test="tei:render-typewriter(.)">\texttt </xsl:if>
+      <xsl:if test="tei:render-typewriter(.)">
+	<xsl:choose>
+	  <xsl:when test="(ancestor-or-self::*[@xml:lang])[1]/@xml:lang='en'">
+	    <xsl:text>\ttfamilylatin </xsl:text>
+	  </xsl:when>
+	  <xsl:otherwise>
+	    <xsl:text>\texttt </xsl:text>
+	  </xsl:otherwise>
+	</xsl:choose>
+      </xsl:if>
       <xsl:if test="tei:render-smallcaps(.)">\textsc </xsl:if>
       <xsl:for-each select="tokenize(normalize-space(@rend),' ')">
         <xsl:choose>
@@ -3551,6 +3560,34 @@ the beginning of the document</desc>
        <xsl:text>}</xsl:text>
      </xsl:for-each>
    </xsl:template>
+<doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+      <desc/>
+   </doc>
+  <xsl:template match="tei:back">
+    <xsl:if test="not(preceding::tei:back)">
+      <xsl:call-template name="startLanguage"/>
+      <xsl:text>\backmatter </xsl:text>
+      </xsl:if>
+      <xsl:apply-templates/>
+      <xsl:if test="not(preceding::tei:back)">
+	<xsl:call-template name="endLanguage"/>
+      </xsl:if>
+  </xsl:template>
+  <xsl:template match="tei:tag">
+    <xsl:text>{</xsl:text>
+    <xsl:choose>
+      <xsl:when test="reverse(ancestor-or-self::*[@xml:lang])[1]/@xml:lang='en'">
+	<xsl:text>\ttfamilylatin </xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:text>\ttfamily </xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text>&lt;</xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>&gt;</xsl:text>
+    <xsl:text>}</xsl:text>
+  </xsl:template>
    
 </xsl:stylesheet>
 
