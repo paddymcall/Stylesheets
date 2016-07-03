@@ -175,6 +175,15 @@ coverage -->
       <xsl:with-param name="currentTEIstartline"><xsl:value-of select="$currentTEIstartline"/></xsl:with-param>
       <xsl:with-param name="relativeLnum" select="$relativeLnum"/>
     </xsl:apply-templates>
+    <xsl:apply-templates select=".//l[not(ancestor::lg)]" mode="lines">
+      <xsl:with-param name="title"><xsl:value-of select="$title"/></xsl:with-param>
+      <xsl:with-param name="author"><xsl:value-of select="$author"/></xsl:with-param>
+      <xsl:with-param name="systemId"><xsl:value-of select="$systemId"/></xsl:with-param>
+      <xsl:with-param name="baseURL"><xsl:value-of select="$baseURL"/></xsl:with-param>
+      <xsl:with-param name="workId"><xsl:value-of select="$workId"/></xsl:with-param>
+      <xsl:with-param name="currentTEIstartline"><xsl:value-of select="$currentTEIstartline"/></xsl:with-param>
+      <xsl:with-param name="relativeLnum" select="$relativeLnum"/>
+    </xsl:apply-templates>
     <xsl:apply-templates select=".//note" mode="notes">
       <xsl:with-param name="title"><xsl:value-of select="$title"/></xsl:with-param>
       <xsl:with-param name="author"><xsl:value-of select="$author"/></xsl:with-param>
@@ -320,6 +329,48 @@ coverage -->
 </xsl:template>
 
 <xsl:template match="lg" mode="linegroups">
+  <xsl:param name="title"/>
+  <xsl:param name="author"/>
+  <xsl:param name="systemId"/>
+  <xsl:param name="baseURL"/>
+  <xsl:param name="currentTEIstartline"/>
+  <xsl:param name="relativeLnum"/>
+  <xsl:param name="workId"/>
+  <xsl:call-template name="makeJson">
+    <xsl:with-param name="title">
+      <xsl:if test="$nested!='true'">
+	<xsl:value-of select="$title" />
+      </xsl:if>
+    </xsl:with-param>
+    <xsl:with-param name="author">
+      <xsl:if test="$nested!='true'">
+	<xsl:value-of select="$author" />
+      </xsl:if>
+    </xsl:with-param>
+    <xsl:with-param name="systemId" select="$systemId"/>
+    <xsl:with-param name="baseURL" select="$baseURL"/>
+    <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
+    <xsl:with-param name="typeName" select="$esTypeName"/>
+    <xsl:with-param name="parent">
+      <xsl:if test="$nested='true'">
+	<xsl:value-of select="$workId"/>
+      </xsl:if>
+    </xsl:with-param>
+    <xsl:with-param name="xmlId">
+      <xsl:if test="@xml:id">
+	<xsl:value-of select="@xml:id"/>
+      </xsl:if>
+    </xsl:with-param>
+    <xsl:with-param name="currentTEIstartline" select="$currentTEIstartline"/>
+    <xsl:with-param name="relativeLnum" select="$relativeLnum"/>
+  </xsl:call-template>
+</xsl:template>
+
+<xsl:template match="l">
+  <xsl:apply-templates />
+</xsl:template>
+
+<xsl:template match="l" mode="lines">
   <xsl:param name="title"/>
   <xsl:param name="author"/>
   <xsl:param name="systemId"/>
