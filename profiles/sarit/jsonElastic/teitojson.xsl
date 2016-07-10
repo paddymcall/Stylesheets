@@ -8,7 +8,6 @@
     >
 <!-- cf http://www.bramstein.com/projects/xsltjson/ for better
 coverage -->
-<xsl:strip-space elements="*"/>
 <xsl:output method="text" encoding="utf-8" />
 <xsl:output name="xmlSrc" method="xml" indent="no" omit-xml-declaration="yes" encoding="utf-8" use-character-maps="escapeInXML" />
 <xsl:character-map name="escapeInXML">
