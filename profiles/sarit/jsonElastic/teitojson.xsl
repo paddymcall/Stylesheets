@@ -7,7 +7,9 @@
     version="2.0"
     >
 <!-- cf http://www.bramstein.com/projects/xsltjson/ for better
-coverage -->
+     coverage -->
+<xsl:strip-space elements="*"/>
+
 <xsl:output method="text" encoding="utf-8" />
 <xsl:output name="xmlSrc" method="xml" indent="no" omit-xml-declaration="yes" encoding="utf-8" use-character-maps="escapeInXML" />
 <xsl:character-map name="escapeInXML">
@@ -517,7 +519,9 @@ coverage -->
 </xsl:template>
 
 <xsl:template match="text()">
-  <xsl:value-of select="replace(replace(replace(normalize-space(.),'\\','\\\\'), '&#10;', ' '),$inq,$outq)"/>
+  <!-- <xsl:message>Before: "<xsl:value-of select="."/>"</xsl:message> -->
+  <xsl:value-of select="replace(replace(replace(.,'\\','\\\\'), '&#10;', ' '),$inq,$outq)"/>
+  <!-- <xsl:message>After: "<xsl:value-of select="replace(replace(replace(.,'\\','\\\\'), '&#10;', ' '),$inq,$outq)"/>"</xsl:message> -->
 </xsl:template>
 
 <xsl:template name="newline">
