@@ -193,6 +193,16 @@ coverage -->
 <xsl:with-param name="currentTEIstartline"><xsl:value-of select="$currentTEIstartline"/></xsl:with-param>
       <xsl:with-param name="relativeLnum" select="$relativeLnum"/>
     </xsl:apply-templates>
+    <!-- avoid losing text -->
+    <xsl:apply-templates select=".//*" mode="fallback">
+      <xsl:with-param name="title"><xsl:value-of select="$title"/></xsl:with-param>
+      <xsl:with-param name="author"><xsl:value-of select="$author"/></xsl:with-param>
+      <xsl:with-param name="systemId"><xsl:value-of select="$systemId"/></xsl:with-param>
+      <xsl:with-param name="baseURL"><xsl:value-of select="$baseURL"/></xsl:with-param>
+      <xsl:with-param name="workId"><xsl:value-of select="$workId"/></xsl:with-param>
+      <xsl:with-param name="currentTEIstartline"><xsl:value-of select="$currentTEIstartline"/></xsl:with-param>
+      <xsl:with-param name="relativeLnum" select="$relativeLnum"/>
+    </xsl:apply-templates>
   </xsl:for-each>
 </xsl:template>
 
@@ -446,6 +456,65 @@ coverage -->
     <xsl:with-param name="currentTEIstartline" select="$currentTEIstartline"/>
     <xsl:with-param name="relativeLnum" select="$relativeLnum"/>
   </xsl:call-template>
+</xsl:template>
+
+<xsl:template match="*">
+  <xsl:apply-templates />
+</xsl:template>
+
+<doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+  <desc>Fallback processing: take only nodes that were not parsed
+  above and have interesting text content. TODO: improve with test
+  cases.</desc>
+</doc>
+<xsl:template match="*" mode="fallback">
+  <xsl:param name="title"/>
+  <xsl:param name="author"/>
+  <xsl:param name="systemId"/>
+  <xsl:param name="baseURL"/>
+  <xsl:param name="workId"/>
+  <xsl:param name="currentTEIstartline"/>
+  <xsl:param name="relativeLnum"/>
+  <xsl:if test="not(string-join(text()/normalize-space(.), '') = '') and
+		not(ancestor-or-self::note) and
+		not(ancestor-or-self::lg) and
+		not(ancestor-or-self::p) and
+		not(ancestor-or-self::l[not(ancestor::lg)]) and
+		string-join(.//text()[
+		not(ancestor::note) and
+		not(ancestor::lg) and
+		not(ancestor::p) and
+		not(ancestor::l[not(ancestor::lg)])]/normalize-space(.), '') != ''">
+    <xsl:message>Fallback for <xsl:value-of select="saxon:path()"/></xsl:message>
+    <xsl:call-template name="makeJson">
+      <xsl:with-param name="title">
+	<xsl:if test="$nested!='true'">
+	  <xsl:value-of select="$title" />
+	</xsl:if>
+      </xsl:with-param>
+      <xsl:with-param name="author">
+	<xsl:if test="$nested!='true'">
+	  <xsl:value-of select="$author" />
+	</xsl:if>
+      </xsl:with-param>
+      <xsl:with-param name="systemId" select="$systemId"/>
+      <xsl:with-param name="baseURL" select="$baseURL"/>
+      <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
+      <xsl:with-param name="typeName" select="$esTypeName"/>
+      <xsl:with-param name="parent">
+	<xsl:if test="$nested='true'">
+	  <xsl:value-of select="$workId"/>
+	</xsl:if>
+      </xsl:with-param>
+      <xsl:with-param name="xmlId">
+	<xsl:if test="@xml:id">
+	  <xsl:value-of select="@xml:id"/>
+	</xsl:if>
+      </xsl:with-param>
+      <xsl:with-param name="currentTEIstartline" select="$currentTEIstartline"/>
+      <xsl:with-param name="relativeLnum" select="$relativeLnum"/>
+    </xsl:call-template>
+  </xsl:if>
 </xsl:template>
 
 <xsl:template match="text()">

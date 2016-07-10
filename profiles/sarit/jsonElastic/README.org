@@ -1,7 +1,7 @@
 #+TITLE: TEI to JSON for Elastic search
 
-This is a simple stylesheet for converting TEI (or teiCorpus) into a
-JSON format that you can feed to [[http://www.elastic.co/][ElasticSearch]].
+This is a simple stylesheet for converting a TEI (or teiCorpus)
+document into a JSON format that you can feed to [[http://www.elastic.co/][ElasticSearch]].
 
 It is meant to work on the [[https://github.com/sarit/SARIT-corpus][SARIT corpus]], which you can generate like
 this (assuming you're in the same directory as the file
@@ -47,9 +47,7 @@ Simpler, without git:
 #+END_SRC
 
 
-If you're happy with the output, run this, assuming you have
-ElasticSearch running on your computer on port 9200 (splitting might
-not be necessary):
+If you're happy with the output, feed the result to elasticsearch:
 
 #+BEGIN_SRC sh
   split -l 4000 /tmp/saritcorpus.js /tmp/saritcorpus-split
@@ -65,3 +63,19 @@ should just be an even number, so that there's always an index and
 data section. 
 
 This has worked at least once with elasticsearch 1.6 :-)
+
+
+* Some background/ideas
+
+The stylesheet here mainly looks at the following elements:
+
+1) lg-s
+2) l-s that are not below a lg
+3) p-s
+
+These are, in the SARIT collection, the most meaningful units that
+searches should match within.  Other text nodes are also indexed (search
+for ~fallback~ in the stylesheet), but searching them might be less
+satisfactory (labels, references, line breaks etc).
+
+
