@@ -506,9 +506,9 @@ capable of dealing with UTF-8 directly.
 	  \newcommand{\add}[1]{($^{+}$#1)}
 	  \newcommand{\deletion}[1]{($^{-}$#1)}
 	  \newcommand{\quotelemma}[1]{\textcolor{cyan}{#1}}
-	  \newcommand{\name}[1]{#1}
-	  \newcommand{\persName}[1]{#1}
-	  \newcommand{\placeName}[1]{#1}
+	  \newcommand{\name}[1]{\textcolor{Blue3}{#1}}
+	  \newcommand{\persName}[1]{\textcolor{Blue3}{#1}}
+	  \newcommand{\placeName}[1]{\textcolor{Blue3}{#1}}
 	  </xsl:text>
       </xsl:when>
       <xsl:otherwise>
@@ -1555,6 +1555,7 @@ the beginning of the document</desc>
         <xsl:apply-templates/>
       </xsl:when>
       <xsl:when test="@rend='inline'">
+	<xsl:message>Creating inline quote</xsl:message>
         <xsl:value-of select="$preQuote"/>
         <xsl:apply-templates/>
         <xsl:value-of select="$postQuote"/>
@@ -1577,8 +1578,13 @@ the beginning of the document</desc>
 	    </xsl:choose>
           </xsl:when>
           <xsl:otherwise>
+	    <xsl:message>LaTeX default quote</xsl:message>
             <xsl:value-of select="$preQuote"/>
+	    <xsl:text>{\color{Green3}% open quote color 
+	    </xsl:text>
             <xsl:apply-templates/>
+	    <xsl:text>}% close quote color
+	    </xsl:text>
             <xsl:value-of select="$postQuote"/>
           </xsl:otherwise>
         </xsl:choose>
@@ -2479,6 +2485,7 @@ the beginning of the document</desc>
 	</xsl:text>
       </xsl:when>
       <xsl:otherwise>
+	<xsl:message>Falling back to makeQuote template</xsl:message>
         <xsl:call-template name="makeQuote"/>
       </xsl:otherwise>
     </xsl:choose>
@@ -3262,7 +3269,14 @@ the beginning of the document</desc>
   </xsl:template>
 
   <xsl:template match="tei:span">
-    <xsl:call-template name="makeSpan"/>
+    <xsl:choose>
+      <xsl:when test="@rend='hidden'">
+	<xsl:message>Not processing hidden span element: <xsl:value-of select="."/></xsl:message>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:call-template name="makeSpan"/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template name="makeSpan">
@@ -3301,11 +3315,11 @@ the beginning of the document</desc>
 	\end{center}
 	</xsl:text>
       </xsl:when>
-    <xsl:otherwise>
-      <xsl:call-template name="makeInline">
-	<xsl:with-param name="style" select="@type"/>
-      </xsl:call-template>
-    </xsl:otherwise>
+      <xsl:otherwise>
+	<xsl:text>[[label: </xsl:text>
+	<xsl:apply-templates/>
+	<xsl:text>]]</xsl:text>
+      </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
