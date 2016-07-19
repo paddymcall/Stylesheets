@@ -506,9 +506,9 @@ capable of dealing with UTF-8 directly.
 	  \newcommand{\add}[1]{($^{+}$#1)}
 	  \newcommand{\deletion}[1]{($^{-}$#1)}
 	  \newcommand{\quotelemma}[1]{\textcolor{cyan}{#1}}
-	  \newcommand{\name}[1]{\textcolor{Blue3}{#1}}
-	  \newcommand{\persName}[1]{\textcolor{Blue3}{#1}}
-	  \newcommand{\placeName}[1]{\textcolor{Blue3}{#1}}
+	  \newcommand{\name}[1]{\emph{#1}}
+	  \newcommand{\persName}[1]{\emph{#1}}
+	  \newcommand{\placeName}[1]{\emph{#1}}
 	  </xsl:text>
       </xsl:when>
       <xsl:otherwise>
@@ -946,7 +946,7 @@ capable of dealing with UTF-8 directly.
     <xsl:choose>
       <xsl:when test="$endpoint">
       <xsl:text>\lemma{</xsl:text>
-      <xsl:value-of select="$lemma"/>
+      <xsl:value-of select="tei:escapeChars($lemma, .)"/>
       <xsl:text>}</xsl:text>
       <xsl:text>\xxref{</xsl:text>
       <xsl:value-of select="$from"/>
@@ -1580,11 +1580,9 @@ the beginning of the document</desc>
           <xsl:otherwise>
 	    <xsl:message>LaTeX default quote</xsl:message>
             <xsl:value-of select="$preQuote"/>
-	    <xsl:text>{\color{Green3}% open quote color 
-	    </xsl:text>
+	    <xsl:text>{\color{Green4}</xsl:text>
             <xsl:apply-templates/>
-	    <xsl:text>}% close quote color
-	    </xsl:text>
+	    <xsl:text>}</xsl:text>
             <xsl:value-of select="$postQuote"/>
           </xsl:otherwise>
         </xsl:choose>
