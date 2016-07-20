@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dbk="http://docbook.org/ns/docbook" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:exsl="http://exslt.org/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:saxon="http://saxon.sf.net/" exclude-result-prefixes="xlink dbk rng tei teix xhtml a html xs xsl" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dbk="http://docbook.org/ns/docbook" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:exsl="http://exslt.org/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:saxon="http://saxon.sf.net/"
+		xmlns:sarit="http://sarit.indology.info/"
+		exclude-result-prefixes="xlink dbk rng tei teix xhtml a html xs xsl" version="2.0">
   <xsl:import href="../../../latex/latex.xsl"/>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
     <desc>
@@ -102,7 +104,10 @@ of this software, even if advised of the possibility of such damage.
   <xsl:param name="boFont">Tibetan Machine Uni</xsl:param>
   <xsl:param name="boFontScale">1.2</xsl:param>
   <xsl:param name="sansFont">TeX Gyre Bonum</xsl:param>
-  <xsl:param name="lemmaColor">DodgerBlue3</xsl:param>
+  <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="style" type="string">
+    <desc>Color for quotes from  a base text (if empty, none). Possible values are those that xcolor has defined when loaded with the x11names option (see http://texdoc.net/texmf-dist/doc/latex/xcolor/xcolor.pdf)</desc>
+  </doc>
+  <xsl:param name="lemmaColor">Green4</xsl:param>
   <xsl:param name="showteiheader">true</xsl:param>
   <xsl:param name="standalone">false</xsl:param>
   <xsl:param name="userpackage"/>
@@ -505,11 +510,13 @@ capable of dealing with UTF-8 directly.
 	  \newcommand{\unclear}[1]{($^{?}$#1)}
 	  \newcommand{\add}[1]{($^{+}$#1)}
 	  \newcommand{\deletion}[1]{($^{-}$#1)}
-	  \newcommand{\quotelemma}[1]{\textcolor{cyan}{#1}}
-	  \newcommand{\name}[1]{\emph{#1}}
-	  \newcommand{\persName}[1]{\emph{#1}}
-	  \newcommand{\placeName}[1]{\emph{#1}}
-	  </xsl:text>
+	\newcommand{\quotelemma}[1]{\color{</xsl:text>
+	<xsl:value-of select="$lemmaColor"/>
+	<xsl:text>}{#1}}
+	\newcommand{\name}[1]{\emph{#1}}
+	\newcommand{\persName}[1]{\emph{#1}}
+	\newcommand{\placeName}[1]{\emph{#1}}
+	</xsl:text>
       </xsl:when>
       <xsl:otherwise>
         <!-- \DeclareTextSymbol{\textpi}{OML}{25} -->
@@ -884,7 +891,10 @@ capable of dealing with UTF-8 directly.
     \linenumincrement{</xsl:text>
     <xsl:value-of select="$ledmac-linenumincrement"/>
     <xsl:text>}
+    %% fix interaction with xcolor package (thanks to Maïeul Rouquette!)
     \renewcommand*{\numlabfont}{\normalfont\scriptsize\color{black}}
+    \Xbhookgroup{\color{black}}%For footnotegroup
+    \renewcommand{\Afootnoterule}{\color{black}\normalfootnoterule}%For footnoterule
     \addtolength{\skip\Afootins}{1.5mm}
     \Xnotenumfont{\bfseries\footnotesize}
     \sidenotemargin{outer}
@@ -1084,13 +1094,7 @@ capable of dealing with UTF-8 directly.
             <xsl:text>}}</xsl:text>
           </xsl:when>
         </xsl:choose>
-	<xsl:if test="parent::tei:quote or parent::tei:q">
-	  <xsl:text>{\normalfontlatin\large ``\qquad}</xsl:text>
-	</xsl:if>
         <xsl:apply-templates/>
-	<xsl:if test="parent::tei:quote or parent::tei:q">
-	  <xsl:text>{\normalfontlatin\large\qquad{}"}</xsl:text>
-	</xsl:if>
 	<xsl:if test="not(child::tei:lg)">
 	  <xsl:text>\&amp;[\smallbreak]
 	  
@@ -1562,27 +1566,28 @@ the beginning of the document</desc>
       </xsl:when>
       <xsl:when test="$outputTarget='latex'">
         <xsl:choose>
-          <xsl:when test="@type='pratīka' or @type='lemma'">
+          <xsl:when test="sarit:is-basetext-quote(.)">
 	    <xsl:choose>
-	      <xsl:when test="./tei:p or ./tei:lg" />
+	      <xsl:when test="./tei:p or ./tei:lg">
+		<xsl:text>\begingroup%
+		\color{</xsl:text>
+		<xsl:value-of select="$lemmaColor"/>
+		<xsl:text>}</xsl:text>
+		<xsl:apply-templates/>
+		<xsl:text>\endgroup%
+		</xsl:text>
+	      </xsl:when>
 	      <xsl:otherwise>
-		<xsl:text>\quotelemma{</xsl:text>				  
-	      </xsl:otherwise>
-	    </xsl:choose>
-            <xsl:apply-templates/>
-            <xsl:choose>
-	      <xsl:when test="./tei:p or ./tei:lg"/>
-	      <xsl:otherwise>
-		<xsl:text>}</xsl:text>				  
+		<xsl:text>\quotelemma{</xsl:text>
+		<xsl:apply-templates/>
+		<xsl:text>}</xsl:text>
 	      </xsl:otherwise>
 	    </xsl:choose>
           </xsl:when>
           <xsl:otherwise>
 	    <xsl:message>LaTeX default quote</xsl:message>
             <xsl:value-of select="$preQuote"/>
-	    <xsl:text>{\color{Green4}</xsl:text>
             <xsl:apply-templates/>
-	    <xsl:text>}</xsl:text>
             <xsl:value-of select="$postQuote"/>
           </xsl:otherwise>
         </xsl:choose>
@@ -2472,10 +2477,12 @@ the beginning of the document</desc>
 	  \bigskip
 	  \begingroup
 	</xsl:text>
-	<xsl:if test="@type='base-text' or @type='mula' or @type='mūla'">
+	<xsl:if test="sarit:is-basetext-quote(.)">
 	  <xsl:text>
 	    \large
-	  </xsl:text>
+	  \color{</xsl:text>
+	  <xsl:value-of select="$lemmaColor"/>
+	  <xsl:text>}</xsl:text>
 	</xsl:if>
         <xsl:apply-templates/>
 	<xsl:text>
@@ -3600,6 +3607,31 @@ the beginning of the document</desc>
     <xsl:text>&gt;</xsl:text>
     <xsl:text>}</xsl:text>
   </xsl:template>
-   
+
+  <xsl:function name="sarit:is-basetext-quote" as="xs:boolean">
+    <xsl:param name="current"/>
+    <!-- <xsl:message>Checking for basetext quote</xsl:message> -->
+    <xsl:choose>
+      <xsl:when test="$current/@type and
+		      (
+		      lower-case($current/@type)='base-text' or
+		      lower-case($current/@type)='pratīka' or
+		      lower-case($current/@type)='pratika' or
+		      lower-case($current/@type)='mula' or
+		      lower-case($current/@type)='mūla' or
+		      lower-case($current/@type)='basetext' or
+		      lower-case($current/@type)='base-text'
+		      )">
+	<!-- <xsl:message>Yes, basetext quote</xsl:message> -->
+	<xsl:value-of select="true()"/>
+      </xsl:when>
+      <xsl:otherwise>
+	<!-- <xsl:message>Nope, no basetext quote</xsl:message> -->
+	<xsl:value-of select="false()"/>
+      </xsl:otherwise>
+    </xsl:choose>    
+  </xsl:function>
+
+
 </xsl:stylesheet>
 
