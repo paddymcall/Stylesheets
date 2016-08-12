@@ -10,11 +10,23 @@
      coverage -->
 <xsl:strip-space elements="*"/>
 
-<xsl:output method="text" encoding="utf-8" />
+<xsl:output method="text" encoding="utf-8"/>
+
 <xsl:output name="xmlSrc" method="xml" indent="no" omit-xml-declaration="yes" encoding="utf-8" use-character-maps="escapeInXML" />
 <xsl:character-map name="escapeInXML">
   <xsl:output-character character="&#10;" string="&lt;lb /&gt;"/>
   <xsl:output-character character="\" string="\\"/>
+</xsl:character-map>
+
+<xsl:character-map name="escapeCtrl">
+  <!-- <xsl:output-character character="&#8;" string="\b" /> -->
+  <!-- <xsl:output-character character="&#12;" string="\f" /> -->
+  <xsl:output-character character="&#9;" string="\t" />
+  <xsl:output-character character="&#10;" string="\n" />
+  <xsl:output-character character="&#13;" string="\r" />
+  <xsl:output-character character="&#34;" string="\&#34;" />
+  <xsl:output-character character="&#47;" string="\/" />
+  <xsl:output-character character="&#92;" string="\\" />
 </xsl:character-map>
 
 
@@ -520,7 +532,7 @@
 
 <xsl:template match="text()">
   <!-- <xsl:message>Before: "<xsl:value-of select="."/>"</xsl:message> -->
-  <xsl:value-of select="replace(replace(replace(.,'\\','\\\\'), '&#10;', ' '),$inq,$outq)"/>
+  <xsl:value-of select="replace(replace(replace(replace(.,'\\','\\\\'), '&#10;', ' '),$inq,$outq), '&#9;', '\\t')"/>
   <!-- <xsl:message>After: "<xsl:value-of select="replace(replace(replace(.,'\\','\\\\'), '&#10;', ' '),$inq,$outq)"/>"</xsl:message> -->
 </xsl:template>
 
