@@ -1489,7 +1489,7 @@ the beginning of the document</desc>
 			    not(ancestor::tei:note or
 			    ancestor::tei:table or
 			    ancestor::tei:app)">
-	      <xsl:text>\marginpar{\footnotesize </xsl:text>
+	      <xsl:text>\marginpar{\tiny </xsl:text>
 	    </xsl:when>
 	    <xsl:when test="ancestor::tei:note">
               <xsl:text>\marginnote{</xsl:text>
@@ -1708,6 +1708,21 @@ the beginning of the document</desc>
       </xsl:when>
       <xsl:when test="not(tei:isInline(..)) and (tei:isLast(.) or tei:isFirst(.))"/>
       <xsl:when test="not($showLineBreaks)"/>
+      <xsl:when  test="$ledmac='true'
+		      and
+		      ancestor::tei:p or ancestor::tei:lg
+		      and not(ancestor::tei:note)">
+	<xsl:text>\ledinnernote{\tiny </xsl:text>
+	<xsl:choose>
+          <xsl:when test="@n">
+            <xsl:value-of select="tei:escapeChars(@n, .)"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>lb</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+	<xsl:text>}</xsl:text>
+      </xsl:when>
       <xsl:otherwise>
         <xsl:text></xsl:text>
 	<xsl:text>{\tiny $_{</xsl:text>
@@ -3320,8 +3335,18 @@ the beginning of the document</desc>
 	\end{center}
 	</xsl:text>
       </xsl:when>
+      <xsl:when test="$ledmac='true'
+		      and
+		      ancestor::tei:p or ancestor::tei:lg
+		      and not(ancestor::tei:note)">
+	<xsl:text>\ledouternote{\tiny </xsl:text>
+	<xsl:value-of select="@n"/>
+	<xsl:apply-templates/>
+	<xsl:text>}</xsl:text>
+      </xsl:when>
       <xsl:otherwise>
 	<xsl:text>[[label: </xsl:text>
+	<xsl:value-of select="@n"/>
 	<xsl:apply-templates/>
 	<xsl:text>]]</xsl:text>
       </xsl:otherwise>
