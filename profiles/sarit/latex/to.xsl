@@ -235,6 +235,9 @@ capable of dealing with UTF-8 directly.
   </xsl:choose>
   <xsl:text>\textsuperscript{cb}%for candrabindu
   }
+  % arrows not in standard font
+  \catcode`↤=\active \def↤{$\leftarrow$}
+  \catcode`↦=\active \def↦{$\rightarrow$}
   %% show a lot of tolerance
   \tolerance=9000
   \def\textJapanese{\fontspec{Kochi Mincho}}
@@ -1695,6 +1698,7 @@ the beginning of the document</desc>
   </doc>
   <xsl:template match="tei:lb">
     <xsl:choose>
+      <xsl:when test="not($showLineBreaks)"/>
       <xsl:when test="parent::tei:body"/>
       <xsl:when test="parent::tei:back"/>
       <xsl:when test="parent::tei:front"/>
@@ -1706,12 +1710,10 @@ the beginning of the document</desc>
         <xsl:text>-</xsl:text>
         <xsl:text>{\hskip1pt}\newline </xsl:text>
       </xsl:when>
-      <xsl:when test="not(tei:isInline(..)) and (tei:isLast(.) or tei:isFirst(.))"/>
-      <xsl:when test="not($showLineBreaks)"/>
-      <xsl:when  test="$ledmac='true'
-		      and
-		      ancestor::tei:p or ancestor::tei:lg
-		      and not(ancestor::tei:note)">
+      <xsl:when test="$ledmac='true'
+		      and (ancestor::tei:p or ancestor::tei:lg)
+		      and not(ancestor::tei:note)
+		      and not(matches(@rend, 'inline'))">
 	<xsl:text>\ledinnernote{\tiny </xsl:text>
 	<xsl:choose>
           <xsl:when test="@n">
@@ -1725,7 +1727,7 @@ the beginning of the document</desc>
       </xsl:when>
       <xsl:otherwise>
         <xsl:text></xsl:text>
-	<xsl:text>{\tiny $_{</xsl:text>
+	<xsl:text>\textsuperscript{\tiny </xsl:text>
         <xsl:choose>
           <xsl:when test="@n">
             <xsl:value-of select="tei:escapeChars(@n, .)"/>
@@ -1734,7 +1736,7 @@ the beginning of the document</desc>
             <xsl:text>lb</xsl:text>
           </xsl:otherwise>
         </xsl:choose>
-        <xsl:text>}$}</xsl:text>
+        <xsl:text>}</xsl:text>
 	<xsl:text></xsl:text>
       </xsl:otherwise>
     </xsl:choose>
@@ -3335,10 +3337,15 @@ the beginning of the document</desc>
 	\end{center}
 	</xsl:text>
       </xsl:when>
+      <xsl:when test="@rend and matches(@rend, 'inline')">
+	<xsl:text>{\tiny </xsl:text>
+	<xsl:call-template name="rendering"/>
+	<xsl:text>}</xsl:text>
+      </xsl:when>
       <xsl:when test="$ledmac='true'
-		      and
-		      ancestor::tei:p or ancestor::tei:lg
-		      and not(ancestor::tei:note)">
+		      and ancestor::tei:p or ancestor::tei:lg
+		      and not(ancestor::tei:note)
+		      ">
 	<xsl:text>\ledouternote{\tiny </xsl:text>
 	<xsl:value-of select="@n"/>
 	<xsl:apply-templates/>
