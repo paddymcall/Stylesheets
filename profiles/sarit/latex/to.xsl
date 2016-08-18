@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dbk="http://docbook.org/ns/docbook" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:exsl="http://exslt.org/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:saxon="http://saxon.sf.net/"
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dbk="http://docbook.org/ns/docbook" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:exsl="http://exslt.org/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:saxon="http://saxon.sf.net/" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+		xmlns:mml="http://www.w3.org/1998/Math/MathML"
 		xmlns:sarit="http://sarit.indology.info/"
 		exclude-result-prefixes="xlink dbk rng tei teix xhtml a html xs xsl" version="2.0">
   <xsl:import href="../../../latex/latex.xsl"/>
+
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
     <desc>
       <p>This software is dual-licensed:
@@ -92,6 +94,8 @@ of this software, even if advised of the possibility of such damage.
     works if $ledmac is also enabled).</desc>
   </doc>
   <xsl:param name="footnotes-as-critical-notes">true</xsl:param>
+  <doc>How to mark notes under apps (to distinguiesh from readings)</doc>
+  <xsl:param name="ledmac-note-intro">---\textsc{Note:} </xsl:param>
   <xsl:param name="printtoc">true</xsl:param>
   <xsl:param name="skipTocDiv">true</xsl:param>
   <xsl:param name="reencode">false</xsl:param>
@@ -1031,7 +1035,7 @@ capable of dealing with UTF-8 directly.
         </xsl:for-each>
         <xsl:for-each select="tei:note">
           <xsl:call-template name="startLanguage"/>
-          <xsl:text>---\textsc{Note} </xsl:text>
+          <xsl:value-of select="$ledmac-note-intro"/>
           <xsl:apply-templates/>
 	  <xsl:call-template name="endLanguage"/>
         </xsl:for-each>
@@ -1558,7 +1562,7 @@ the beginning of the document</desc>
       <xsl:when test="/*/tei:teiHeader//tei:editorialDecl/tei:quotation[@marks='all']">
         <xsl:apply-templates/>
       </xsl:when>
-      <xsl:when test="@rend='inline'">
+      <xsl:when test="matches(@rend, 'inline')">
 	<xsl:message>Creating inline quote</xsl:message>
         <xsl:value-of select="$preQuote"/>
         <xsl:apply-templates/>
@@ -1592,7 +1596,7 @@ the beginning of the document</desc>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
-      <xsl:when test="@rend or @rendition or          key('TAGREND',local-name(.))">
+      <xsl:when test="@rend or @rendition or key('TAGREND',local-name(.))">
         <xsl:apply-templates/>
       </xsl:when>
       <xsl:otherwise>
@@ -3657,6 +3661,207 @@ the beginning of the document</desc>
     </xsl:choose>    
   </xsl:function>
 
+  <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+    <desc>Is given an element and defines whether or not this element is to be rendered inline.</desc>
+  </doc>
+  <xsl:function name="tei:isInline" as="xs:boolean">
+    <xsl:param name="element"/>
+    <xsl:choose>
+      <xsl:when test="empty($element)">true</xsl:when>
+      <xsl:otherwise>
+        <xsl:for-each select="$element">
+          <xsl:choose>
+	    <xsl:when test="matches($element/@rend, 'inline')">true</xsl:when>
+            <xsl:when test="parent::tei:div">false</xsl:when>
+            <xsl:when test="parent::tei:titlePage">false</xsl:when>
+            <xsl:when test="parent::tei:body">false</xsl:when>
+            <xsl:when test="parent::tei:front">false</xsl:when>
+            <xsl:when test="parent::tei:back">false</xsl:when>
+            <xsl:when test="self::tei:body">false</xsl:when>
+            <xsl:when test="self::tei:front">false</xsl:when>
+            <xsl:when test="self::tei:back">false</xsl:when>
+            <xsl:when test="not(self::*)">true</xsl:when>
+            <xsl:when test="parent::tei:bibl/parent::tei:q">true</xsl:when>
+            <xsl:when test="tei:match(@rend,'inline') and not(tei:p or tei:l)">true</xsl:when>
+            <xsl:when test="self::tei:note[@place='display']">false</xsl:when>
+            <xsl:when test="self::tei:note[@place='block']">false</xsl:when>
+            <xsl:when test="self::tei:note[tei:isEndNote(.)]">true</xsl:when>
+            <xsl:when test="self::tei:note[tei:isFootNote(.)]">true</xsl:when>
+            <xsl:when test="tei:match(@rend,'display') or tei:match(@rend,'block')">false</xsl:when>
+            <xsl:when test="@type='display' or @type='block'">false</xsl:when>
+            <xsl:when test="tei:table or tei:figure or tei:list or tei:lg    or tei:q/tei:l or tei:l or tei:p or tei:biblStruct or tei:sp or tei:floatingText">false</xsl:when>
+            <xsl:when test="self::tei:cit[not(@rend)]">true</xsl:when>
+            <xsl:when test="parent::tei:cit[tei:match(@rend,'display')]">false</xsl:when>
+            <xsl:when test="parent::tei:cit and (tei:p or tei:l)">false</xsl:when>
+            <xsl:when test="parent::tei:cit and parent::cit/tei:bibl">false</xsl:when>
+            <xsl:when test="self::tei:docAuthor and parent::tei:byline">true</xsl:when>
+            <xsl:when test="self::tei:note[tei:cit/tei:bibl]">false</xsl:when>
+            <xsl:when test="self::tei:note[parent::tei:biblStruct]">true</xsl:when>
+            <xsl:when test="self::tei:note[parent::tei:bibl]">true</xsl:when>
+            <xsl:when test="self::tei:note">true</xsl:when>
+            <xsl:when test="self::mml:math">true</xsl:when>
+            <xsl:when test="self::tei:abbr">true</xsl:when>
+            <xsl:when test="self::tei:affiliation">true</xsl:when>
+            <xsl:when test="self::tei:altIdentifier">true</xsl:when>
+            <xsl:when test="self::tei:analytic">true</xsl:when>
+            <xsl:when test="self::tei:add">true</xsl:when>
+            <xsl:when test="self::tei:am">true</xsl:when>
+            <xsl:when test="self::tei:att">true</xsl:when>
+            <xsl:when test="self::tei:author">true</xsl:when>
+            <xsl:when test="self::tei:bibl and not (tei:isInline(preceding-sibling::*[1]))">false</xsl:when>
+            <xsl:when test="self::tei:bibl and not (parent::tei:listBibl)">true</xsl:when>
+            <xsl:when test="self::tei:biblScope">true</xsl:when>
+            <xsl:when test="self::tei:br">true</xsl:when>
+            <xsl:when test="self::tei:byline">true</xsl:when>
+            <xsl:when test="self::tei:c">true</xsl:when>
+            <xsl:when test="self::tei:caesura">true</xsl:when>
+            <xsl:when test="self::tei:choice">true</xsl:when>
+            <xsl:when test="self::tei:code">true</xsl:when>
+            <xsl:when test="self::tei:collection">true</xsl:when>
+            <xsl:when test="self::tei:country">true</xsl:when>
+            <xsl:when test="self::tei:damage">true</xsl:when>
+            <xsl:when test="self::tei:date">true</xsl:when>
+            <xsl:when test="self::tei:del">true</xsl:when>
+            <xsl:when test="self::tei:depth">true</xsl:when>
+            <xsl:when test="self::tei:dim">true</xsl:when>
+            <xsl:when test="self::tei:dimensions">true</xsl:when>
+            <xsl:when test="self::tei:editor">true</xsl:when>
+            <xsl:when test="self::tei:editionStmt">true</xsl:when>
+            <xsl:when test="self::tei:emph">true</xsl:when>
+            <xsl:when test="self::tei:ex">true</xsl:when>
+            <xsl:when test="self::tei:expan">true</xsl:when>
+            <xsl:when test="self::tei:figure[@place='inline']">true</xsl:when>
+            <xsl:when test="self::tei:figure">false</xsl:when>
+            <xsl:when test="self::tei:floatingText">false</xsl:when>
+            <xsl:when test="self::tei:foreign">true</xsl:when>
+            <xsl:when test="self::tei:forename">true</xsl:when>
+            <xsl:when test="self::tei:g">true</xsl:when>
+            <xsl:when test="self::tei:gap">true</xsl:when>
+            <xsl:when test="self::tei:genName">true</xsl:when>
+            <xsl:when test="self::tei:geogName">true</xsl:when>
+            <xsl:when test="self::tei:gi">true</xsl:when>
+            <xsl:when test="self::tei:gloss">true</xsl:when>
+            <xsl:when test="self::tei:graphic">true</xsl:when>
+            <xsl:when test="self::tei:media">true</xsl:when>
+            <xsl:when test="self::tei:height">true</xsl:when>
+            <xsl:when test="self::tei:hi[not(w:*)]">true</xsl:when>
+            <xsl:when test="self::tei:ident">true</xsl:when>
+            <xsl:when test="self::tei:idno">true</xsl:when>
+            <xsl:when test="self::tei:imprint">true</xsl:when>
+            <xsl:when test="self::tei:institution">true</xsl:when>
+            <xsl:when test="self::tei:label[not(parent::tei:list)]">true</xsl:when>
+            <xsl:when test="self::tei:locus">true</xsl:when>
+            <xsl:when test="self::tei:mentioned">true</xsl:when>
+            <xsl:when test="self::tei:monogr">true</xsl:when>
+            <xsl:when test="self::tei:series">true</xsl:when>
+            <xsl:when test="self::tei:msName">true</xsl:when>
+            <xsl:when test="self::tei:name">true</xsl:when>
+            <xsl:when test="self::tei:num">true</xsl:when>
+            <xsl:when test="self::tei:orgName">true</xsl:when>
+            <xsl:when test="self::tei:orig">true</xsl:when>
+            <xsl:when test="self::tei:origDate">true</xsl:when>
+            <xsl:when test="self::tei:origPlace">true</xsl:when>
+            <xsl:when test="self::tei:pc">true</xsl:when>
+            <xsl:when test="self::tei:persName">true</xsl:when>
+            <xsl:when test="self::tei:placeName">true</xsl:when>
+            <xsl:when test="self::tei:ptr">true</xsl:when>
+            <xsl:when test="self::tei:publisher">true</xsl:when>
+            <xsl:when test="self::tei:pubPlace">true</xsl:when>
+            <xsl:when test="self::tei:lb or self::pb">true</xsl:when>
+            <xsl:when test="self::tei:quote and tei:lb">false</xsl:when>
+            <xsl:when test="self::tei:quote and $autoBlockQuote='true' and string-length(.)&gt;$autoBlockQuoteLength">false</xsl:when>
+            <xsl:when test="self::tei:q">true</xsl:when>
+            <xsl:when test="self::tei:quote">true</xsl:when>
+            <xsl:when test="self::tei:ref">true</xsl:when>
+            <xsl:when test="self::tei:region">true</xsl:when>
+            <xsl:when test="self::tei:repository">true</xsl:when>
+            <xsl:when test="self::tei:roleName">true</xsl:when>
+            <xsl:when test="self::tei:rubric">true</xsl:when>
+            <xsl:when test="self::tei:rs">true</xsl:when>
+            <xsl:when test="self::tei:said">true</xsl:when>
+            <xsl:when test="self::tei:seg">true</xsl:when>
+            <xsl:when test="self::tei:sic">true</xsl:when>
+            <xsl:when test="self::tei:settlement">true</xsl:when>
+            <xsl:when test="self::tei:soCalled">true</xsl:when>
+            <xsl:when test="self::tei:summary">true</xsl:when>
+            <xsl:when test="self::tei:supplied">true</xsl:when>
+            <xsl:when test="self::tei:surname">true</xsl:when>
+            <xsl:when test="self::tei:tag">true</xsl:when>
+            <xsl:when test="self::tei:term">true</xsl:when>
+            <xsl:when test="self::tei:textLang">true</xsl:when>
+            <xsl:when test="self::tei:title">true</xsl:when>
+            <xsl:when test="self::tei:unclear">true</xsl:when>
+            <xsl:when test="self::tei:val">true</xsl:when>
+            <xsl:when test="self::tei:width">true</xsl:when>
+            <xsl:when test="self::tei:dynamicContent">true</xsl:when>
+            <xsl:when test="self::w:drawing">true</xsl:when>
+            <xsl:when test="self::m:oMath">true</xsl:when>
+            <xsl:when test="parent::tei:note[tei:isEndNote(.)]">false</xsl:when>
+            <xsl:when test="empty($element/..)">false</xsl:when>
+            <xsl:when test="not(self::tei:p) and tei:isInline($element/..)">true</xsl:when>
+            <xsl:otherwise>false</xsl:otherwise>
+          </xsl:choose>
+        </xsl:for-each>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:function>
 
+<doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+    <desc>[common] handle character data.
+      Following http://wiki.tei-c.org/index.php/XML_Whitespace#XSLT_Normalization_Code,
+      the algorithm to normalize space in mixed content is:
+      Collapse all white space, then
+      trim leading space on the first text node in an element and
+      trim trailing space on the last text node in an element,
+      trim both if a text node is both first and last, i.e., is the only text node in the element.</desc>
+  </doc>
+  <xsl:template match="text()" mode="#default plain">
+    <xsl:choose>
+      <xsl:when test="ancestor::*[@xml:space][1]/@xml:space='preserve'">
+        <xsl:value-of select="tei:escapeChars(.,parent::*)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <!-- Retain one leading space if node isn't first, has
+	     non-space content, and has leading space.-->
+	<xsl:variable name="context" select="name(parent::*)"/>
+	<!-- changed test <p><hi>ab<hi><hi> <anchor xml:id="abc"/><hi>hello</p> would not work correctly-->
+	<xsl:if test="matches(.,'^\s') and  (normalize-space()!='' or following-sibling::node())">
+	  <!-- if the text is first thing in a note, zap it,  definitely -->
+	  <xsl:choose>
+	    <xsl:when test="(tei:isFootNote(..) or tei:isEndNote(..))
+			    and position()=1"/>
+	    <!-- but if its in a run of inline objects with the same
+	    name (like a sequence of <hi>), then the space needs
+	    keeping -->
+	    <xsl:when test="(tei:isInline(parent::*)  and
+			    parent::*/preceding-sibling::node()[1][name()=$context])">
+		      <xsl:call-template name="space"/>
+              <xsl:call-template name="space"/>
+	    </xsl:when>
+	    <xsl:when test="position()=1"/>
+            <xsl:otherwise>
+              <xsl:call-template name="space"/>
+	    </xsl:otherwise>
+	  </xsl:choose>
+	</xsl:if>
+        <xsl:value-of select="tei:escapeChars(normalize-space(.),parent::*)"/>
+        <xsl:choose>
+          <!-- node is an only child, and has content but it's all space -->
+          <xsl:when test="last()=1 and string-length()!=0 and      normalize-space()=''">
+            <xsl:call-template name="space"/>
+          </xsl:when>
+          <!-- node isn't last, isn't first, and has trailing space -->
+          <xsl:when test="position()!=1 and position()!=last() and matches(.,'\s$')">
+            <xsl:call-template name="space"/>
+          </xsl:when>
+          <!-- node isn't last, is first, has trailing space, and has non-space content   -->
+          <xsl:when test="position()=1 and matches(.,'\s$') and normalize-space()!=''">
+            <xsl:call-template name="space"/>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  
 </xsl:stylesheet>
 
