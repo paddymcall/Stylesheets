@@ -517,9 +517,9 @@ capable of dealing with UTF-8 directly.
 	  \newcommand{\unclear}[1]{($^{?}$#1)}
 	  \newcommand{\add}[1]{($^{+}$#1)}
 	  \newcommand{\deletion}[1]{($^{-}$#1)}
-	\newcommand{\quotelemma}[1]{\color{</xsl:text>
+	\newcommand{\quotelemma}[1]{{\color{</xsl:text>
 	<xsl:value-of select="$lemmaColor"/>
-	<xsl:text>}{#1}}
+	<xsl:text>}#1}}
 	\newcommand{\name}[1]{\emph{#1}}
 	\newcommand{\persName}[1]{\emph{#1}}
 	\newcommand{\placeName}[1]{\emph{#1}}
@@ -1292,7 +1292,7 @@ the beginning of the document</desc>
       </xsl:when>
       <xsl:otherwise>
 	<xsl:if test="boolean($showLineBreaks)">
-	  <xsl:text>\textsuperscript{\normalfontlatin </xsl:text>
+	  <xsl:text>\textsubscript{\normalfontlatin </xsl:text>
 	  <xsl:choose>
           <xsl:when test="@n">
             <xsl:value-of select="tei:escapeChars(@n, .)"/>
@@ -1562,15 +1562,6 @@ the beginning of the document</desc>
   <xsl:template name="makeQuote">
     <xsl:call-template name="startLanguage"/>
     <xsl:choose>
-      <xsl:when test="/*/tei:teiHeader//tei:editorialDecl/tei:quotation[@marks='all']">
-        <xsl:apply-templates/>
-      </xsl:when>
-      <xsl:when test="matches(@rend, 'inline')">
-	<xsl:message>Creating inline quote</xsl:message>
-        <xsl:value-of select="$preQuote"/>
-        <xsl:apply-templates/>
-        <xsl:value-of select="$postQuote"/>
-      </xsl:when>
       <xsl:when test="$outputTarget='latex'">
         <xsl:choose>
           <xsl:when test="sarit:is-basetext-quote(.)">
@@ -1592,10 +1583,10 @@ the beginning of the document</desc>
 	    </xsl:choose>
           </xsl:when>
           <xsl:otherwise>
-	    <xsl:message>LaTeX default quote</xsl:message>
-            <xsl:value-of select="$preQuote"/>
-            <xsl:apply-templates/>
-            <xsl:value-of select="$postQuote"/>
+	    <xsl:message>Creating inline quote</xsl:message>
+	    <xsl:value-of select="$preQuote"/>
+	    <xsl:apply-templates/>
+	    <xsl:value-of select="$postQuote"/>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
@@ -3650,7 +3641,6 @@ the beginning of the document</desc>
     <xsl:choose>
       <xsl:when test="$current/@type and
 		      (
-		      lower-case($current/@type)='base-text' or
 		      lower-case($current/@type)='pratīka' or
 		      lower-case($current/@type)='pratika' or
 		      lower-case($current/@type)='mula' or
@@ -3831,7 +3821,7 @@ the beginning of the document</desc>
         <!-- Retain one leading space if node isn't first, has
 	     non-space content, and has leading space.-->
 	<xsl:variable name="context" select="name(parent::*)"/>
-	<!-- changed test <p><hi>ab<hi><hi> <anchor xml:id="abc"/><hi>hello</p> would not work correctly-->
+	<!-- changed test <p><hi>ab</hi><hi> <anchor xml:id="abc"/></hi>hello</p> would not work correctly-->
 	<xsl:if test="matches(.,'^\s') and  (normalize-space()!='' or following-sibling::node())">
 	  <!-- if the text is first thing in a note, zap it,  definitely -->
 	  <xsl:choose>
