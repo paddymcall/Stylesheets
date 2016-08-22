@@ -75,7 +75,7 @@ of this software, even if advised of the possibility of such damage.
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="string">
     <desc>Optional parameters for documentclass</desc>
   </doc>
-  <xsl:param name="classParameters">article,12pt</xsl:param>
+  <xsl:param name="classParameters">article,14pt</xsl:param>
   <xsl:param name="homeURL">http://sarit.indology.info</xsl:param>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">What to add to the $homeURL to get the resolution of canonical references (needs an external program, of course).</doc>
   <xsl:param name="cRef-query-string">/?cref=</xsl:param>
@@ -224,7 +224,7 @@ capable of dealing with UTF-8 directly.
   \catcode`〔=\active \def〔{{[}}% translate 〔OPENING TORTOISE SHELL BRACKET
   \catcode`〕=\active \def〕{{]}}% translate 〕CLOSING TORTOISE SHELL BRACKET
   \catcode` =\active \def {\,}
-  \catcode`·=\active \def·{\textbullet}
+  \catcode`·=\active \def·{,}
   %% BREAK PERMITTED HERE: \discretionary{-}{}{}\nobreak\hspace{0pt}
   \catcode`=\active \def{\-}
   \catcode`ꣵ=\active \defꣵ{%
@@ -1722,7 +1722,7 @@ the beginning of the document</desc>
       </xsl:when>
       <xsl:otherwise>
         <xsl:text></xsl:text>
-	<xsl:text>\textsuperscript{\tiny </xsl:text>
+	<xsl:text>\textsubscript{\tiny\color{gray} </xsl:text>
         <xsl:choose>
           <xsl:when test="@n">
             <xsl:value-of select="tei:escapeChars(@n, .)"/>
