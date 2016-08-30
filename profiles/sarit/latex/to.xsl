@@ -127,7 +127,7 @@ of this software, even if advised of the possibility of such damage.
   <xsl:param name="usetitling">true</xsl:param>
   <xsl:param name="leftside" as="xs:boolean">false</xsl:param>
   <xsl:param name="rightside" as="xs:boolean">false</xsl:param>
-  <xsl:param name="showLineBreaks" as="xs:boolean">true</xsl:param>
+  <xsl:param name="showLineBreaks" as="xs:boolean">false</xsl:param>
   <xsl:param name="showPageBreaks" as="xs:boolean">true</xsl:param>
   <xsl:param name="pagebreakStyle"/>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">Whether to handle canonical references strictly (if true, no
@@ -138,7 +138,7 @@ of this software, even if advised of the possibility of such damage.
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
     <desc>At which level to restart the numbering</desc>
   </doc>
-  <xsl:param name="ledmacNumberDepth">0</xsl:param>
+  <xsl:param name="ledmacNumberDepth">1</xsl:param>
   <xsl:param  name="ledmac-firstlinenum">5</xsl:param>
   <xsl:param  name="ledmac-linenumincrement">5</xsl:param>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
@@ -745,16 +745,37 @@ capable of dealing with UTF-8 directly.
        </xsl:if>
        <xsl:choose>
 	 <xsl:when test="$documentclass='memoir'">
+	   <xsl:text>
 	   % pagestyles
 	   \pagestyle{ruled}
-	   \makeoddhead{ruled}{{<xsl:value-of select="tei:generateShortTitle(.)"/>}}{}{          <xsl:sequence select="tei:generateAuthor(.)"/>}
+	   \makeoddhead{ruled}{{</xsl:text>
+	   <xsl:value-of select="tei:generateShortTitle(.)"/>
+	   <xsl:text>}}{}{</xsl:text>
+	   <xsl:sequence select="tei:generateAuthor(.)" />
+	   <xsl:text>}
 	   \makeoddfoot{ruled}{{\tiny\rmlatinfont \textit{Compiled: \today}}}{%
-	   <xsl:if test="$revision">{\tiny\rmlatinfont \textit{Revision: \href{<xsl:value-of select="concat($revurl, $revision)"/>}{<xsl:value-of select="$revision"/>}}}</xsl:if>%
+	   </xsl:text>
+	   <xsl:if test="$revision">
+	     <xsl:text>{\tiny\rmlatinfont \textit{Revision: \href{</xsl:text>
+	     <xsl:value-of select="concat($revurl, $revision)"/>
+	     <xsl:text>}{</xsl:text>
+	     <xsl:value-of select="$revision"/>
+	     <xsl:text>}}}</xsl:text>
+	   </xsl:if>
+	   <xsl:text>%
 	   }{\rmlatinfont\thepage}
 	   \makeevenfoot{ruled}{\rmlatinfont\thepage}{%
-	   <xsl:if test="$revision">{\tiny\rmlatinfont \textit{Revision: \href{<xsl:value-of select="concat($revurl, $revision)"/>}{<xsl:value-of select="$revision"/>}}}</xsl:if>%
+	   </xsl:text>	   
+	   <xsl:if test="$revision">
+	     <xsl:text>{\tiny\rmlatinfont \textit{Revision: \href{</xsl:text>
+	     <xsl:value-of select="concat($revurl, $revision)"/>
+	     <xsl:text>}{</xsl:text>
+	     <xsl:value-of select="$revision"/>
+	     <xsl:text>}}}</xsl:text>
+	   </xsl:if>
+	   <xsl:text>%
 	   }{{\tiny\rmlatinfont \textit{Compiled: \today}}}
-	   
+	   </xsl:text>	   
 	 </xsl:when>
 	 <xsl:otherwise>
 	   \pagestyle{fancy} 
@@ -1887,6 +1908,7 @@ the beginning of the document</desc>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:param>
+  
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
     <desc>
       <p>Options of default language of document that get passed to setdefaultlanguage</p>
@@ -1902,7 +1924,9 @@ the beginning of the document</desc>
     </xsl:choose>
   </xsl:param>
   <xsl:template name="startLanguage">
-    <xsl:if test="@xml:lang">
+    <xsl:param name="lang" select="@xml:lang/string()"/>
+    <xsl:message>Starting language at <xsl:value-of select="saxon:path(.)"/>: <xsl:value-of select="$lang"/></xsl:message>
+    <xsl:if test="boolean($lang)">
       <xsl:choose>
 	<xsl:when test="self::tei:head">
 	  <xsl:text>{\protect{\text</xsl:text>
@@ -1912,10 +1936,10 @@ the beginning of the document</desc>
 	</xsl:otherwise>
       </xsl:choose>
       <xsl:choose>
-        <xsl:when test="@xml:lang='bo'">
+        <xsl:when test="$lang='bo'">
           <xsl:text>tibetan</xsl:text>
         </xsl:when>
-        <xsl:when test="starts-with(@xml:lang,'sa')">
+        <xsl:when test="starts-with($lang,'sa')">
           <xsl:text>sanskrit</xsl:text>
 	</xsl:when>
         <xsl:otherwise>
@@ -1933,17 +1957,18 @@ the beginning of the document</desc>
     </xsl:if>
   </xsl:template>
   <xsl:template name="endLanguage">
-    <xsl:if test="@xml:lang">
+    <xsl:param name="lang" select="@xml:lang"/>
+    <xsl:if test="$lang">
       <xsl:choose>
 	<xsl:when test="self::tei:head">
 	  <xsl:text>}}</xsl:text>
 	</xsl:when>
 	<xsl:otherwise>
 	  <xsl:choose>
-            <xsl:when test="@xml:lang='bo'">
+            <xsl:when test="$lang='bo'">
               <xsl:text>\end{tibetan}</xsl:text>
             </xsl:when>
-            <xsl:when test="starts-with(@xml:lang,'sa')">
+            <xsl:when test="starts-with($lang,'sa')">
               <xsl:text>\end{sanskrit}</xsl:text>
 	    </xsl:when>
             <xsl:otherwise>
@@ -2512,7 +2537,10 @@ the beginning of the document</desc>
     <desc>Process element head</desc>
   </doc>
   <xsl:template match="tei:head">
-    <xsl:message>Head element found.</xsl:message>
+    <xsl:param name="depth">
+      <xsl:value-of select="count(ancestor::tei:div[ancestor::tei:text])"/>
+    </xsl:param>
+    <xsl:message>Head element found.</xsl:message>    
     <xsl:choose>
       <xsl:when test="parent::tei:castList"/>
       <xsl:when test="parent::tei:figure"/>
@@ -2521,9 +2549,6 @@ the beginning of the document</desc>
       <xsl:when test="parent::tei:table"/>
       <xsl:when test="preceding-sibling::tei:head"/>
       <xsl:otherwise>
-        <xsl:variable name="depth">
-	  <xsl:value-of select="count(ancestor::div[ancestor::text])"/>
-        </xsl:variable>
         <xsl:message>Depth of this head (<xsl:value-of select="."/>): <xsl:value-of select="$depth"/>.</xsl:message>
         <xsl:text>
 \</xsl:text>
@@ -2542,12 +2567,12 @@ the beginning of the document</desc>
           <xsl:when test="$documentclass='memoir'">
             <xsl:message>Processing head for memoir class.</xsl:message>
             <xsl:choose>
-              <xsl:when test="parent::tei:div[@type='part']">part</xsl:when>
-              <xsl:when test="$depth=0">chapter</xsl:when>
-              <xsl:when test="$depth=1">section</xsl:when>
-              <xsl:when test="$depth=2">subsection</xsl:when>
-              <xsl:when test="$depth=3">subsubsection</xsl:when>
-              <xsl:when test="$depth &gt; 3">paragraph</xsl:when>
+              <xsl:when test="parent::tei:div[@type='part'] or $depth=0">part</xsl:when>
+              <xsl:when test="$depth=1">chapter</xsl:when>
+              <xsl:when test="$depth=2">section</xsl:when>
+              <xsl:when test="$depth=3">subsection</xsl:when>
+              <xsl:when test="$depth=4">subsubsection</xsl:when>
+              <xsl:when test="$depth &gt; 4">paragraph</xsl:when>
               <xsl:otherwise>section</xsl:otherwise>
             </xsl:choose>
           </xsl:when>
@@ -2605,13 +2630,9 @@ the beginning of the document</desc>
     <desc>Process a head for the TOC.</desc>
   </doc>
   <xsl:template name="makeHeadTOC">
-    <xsl:variable name="text">
-      <xsl:value-of select=".//text()"/>
-    </xsl:variable>
-    <xsl:value-of select="tei:escapeChars(normalize-space($text),.)"/>
+    <xsl:value-of select="tei:escapeChars(.//text()/normalize-space(), .)"/>
     <xsl:if test="following-sibling::tei:head">
-      <xsl:text>: </xsl:text>
-      <xsl:value-of select="normalize-space(following-sibling::tei:head/tei:escapeChars(.,.))"/>
+      <xsl:value-of select="concat(':', tei:escapeChars(string-join(following-sibling::tei:head//text()/normalize-space(),' '),.))"/>
     </xsl:if>
   </xsl:template>
 
@@ -2622,10 +2643,10 @@ the beginning of the document</desc>
 </doc>
 
 <xsl:template match="tei:div|tei:div1|tei:div2|tei:div3|tei:div4|tei:div5">
-  <xsl:if test="not($skipTocDiv='true' and @type='toc')">
-    <xsl:variable name="depth">
+  <xsl:param name="depth">
       <xsl:value-of select="count(ancestor::tei:div|tei:div1|tei:div2|tei:div3|tei:div4|tei:div5)"/>
-    </xsl:variable>
+  </xsl:param>
+  <xsl:if test="not($skipTocDiv='true' and @type='toc')">
     <xsl:if test="not(child::tei:head) and @xml:id">
       <xsl:text>\label{</xsl:text>
       <xsl:value-of select="@xml:id"/>
@@ -2644,7 +2665,7 @@ the beginning of the document</desc>
 	<xsl:if test="$depth = $ledmacNumberDepth">
 	  <xsl:text>
 	    
-	    \beginnumbering% beginning numbering from div depth=0
+	    \beginnumbering% beginning numbering
 	    
 	  </xsl:text>
 	</xsl:if>
@@ -2742,13 +2763,25 @@ the beginning of the document</desc>
     <xsl:choose>
       <xsl:when test="$context/ancestor-or-self::tei:TEI/tei:teiHeader//tei:titleStmt/tei:title[matches(@type, 'short')]">
 	<xsl:for-each select="$context/ancestor-or-self::tei:TEI/tei:teiHeader//tei:titleStmt/tei:title[matches(@type, 'short')]">
+	  <xsl:call-template name="startLanguage">
+	    <xsl:with-param name="lang" select="(ancestor-or-self::*[@xml:lang]/@xml:lang/string())[1]"/>
+	  </xsl:call-template>
 	  <xsl:apply-templates select="."/>
+	  <xsl:call-template name="endLanguage">
+	    <xsl:with-param name="lang" select="(ancestor-or-self::*[@xml:lang]/@xml:lang/string())[1]"/>
+	  </xsl:call-template>
 	</xsl:for-each>
       </xsl:when>
       <xsl:otherwise>
 	<xsl:for-each select="$context/ancestor-or-self::tei:TEI/tei:teiHeader//tei:titleStmt/tei:title[not(matches(@type, 'sub') or matches(@type, 'pre'))]">
 	  <xsl:message>Doing title <xsl:value-of select="."/></xsl:message>
+	  <xsl:call-template name="startLanguage">
+	    <xsl:with-param name="lang" select="(ancestor-or-self::*[@xml:lang]/@xml:lang/string())[1]"/>
+	  </xsl:call-template>
 	  <xsl:apply-templates select="."/>
+	  <xsl:call-template name="endLanguage">
+	    <xsl:with-param name="lang" select="(ancestor-or-self::*[@xml:lang]/@xml:lang/string())[1]"/>
+	  </xsl:call-template>
 	</xsl:for-each>
       </xsl:otherwise>
     </xsl:choose>
@@ -2780,7 +2813,9 @@ the beginning of the document</desc>
           </xsl:for-each>
           <xsl:if test="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author">
             <xsl:text> // </xsl:text>
-            <xsl:sequence select="replace(string-join(tei:generateAuthor(.),''),'; ','')"/>
+	    <xsl:for-each select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author">
+	      <xsl:apply-templates select="." mode="simple"/>
+	    </xsl:for-each>
           </xsl:if>
         </xsl:otherwise>
       </xsl:choose>
@@ -3859,6 +3894,29 @@ the beginning of the document</desc>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
+
+  <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+      <desc>Process element author in "author" mode"</desc>
+   </doc>
+   <xsl:template match="tei:author" mode="author">
+     <xsl:call-template name="startLanguage">
+       <xsl:with-param name="lang" select="(ancestor-or-self::*[@xml:lang]/@xml:lang/string())[1]"/>
+     </xsl:call-template>
+     <xsl:apply-templates select="*[not(self::tei:email or self::tei:affiliation)]|text()"/>
+     <xsl:call-template name="endLanguage">
+       <xsl:with-param name="lang" select="(ancestor-or-self::*[@xml:lang]/@xml:lang/string())[1]"/>
+     </xsl:call-template>
+     <xsl:choose>
+      <xsl:when test="count(following-sibling::tei:author)=1">
+	<xsl:if test="count(preceding-sibling::tei:author)&gt;1">
+	  <xsl:text>,</xsl:text>
+	</xsl:if>
+	<xsl:text> </xsl:text>
+	<xsl:sequence select="tei:i18n('and')"/>
+	<xsl:text> </xsl:text>
+      </xsl:when>
+      <xsl:when test="following-sibling::tei:author">, </xsl:when>
+    </xsl:choose>
+  </xsl:template>
 </xsl:stylesheet>
 
