@@ -2630,7 +2630,7 @@ the beginning of the document</desc>
     <desc>Process a head for the TOC.</desc>
   </doc>
   <xsl:template name="makeHeadTOC">
-    <xsl:value-of select="tei:escapeChars(.//text()/normalize-space(), .)"/>
+    <xsl:value-of select="tei:escapeChars(string-join(.//text()/normalize-space(), ' '), .)"/>
     <xsl:if test="following-sibling::tei:head">
       <xsl:value-of select="concat(':', tei:escapeChars(string-join(following-sibling::tei:head//text()/normalize-space(),' '),.))"/>
     </xsl:if>
