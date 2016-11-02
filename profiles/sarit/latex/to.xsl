@@ -224,7 +224,9 @@ capable of dealing with UTF-8 directly.
   \catcode`〔=\active \def〔{{[}}% translate 〔OPENING TORTOISE SHELL BRACKET
   \catcode`〕=\active \def〕{{]}}% translate 〕CLOSING TORTOISE SHELL BRACKET
   \catcode` =\active \def {\,}
-  \catcode`·=\active \def·{,}
+  \catcode`·=\active \def·{$\bullet$}
+  %% \catcode`…=\active \def…{{\normalfontlatin\ldots}}%% won't work?
+  \catcode`…=\active \def…{...}
   %% BREAK PERMITTED HERE: \discretionary{-}{}{}\nobreak\hspace{0pt}
   \catcode`=\active \def{\-}
   \catcode`ꣵ=\active \defꣵ{%
@@ -1887,10 +1889,10 @@ the beginning of the document</desc>
   </doc>
   <xsl:param name="defaultlanguage">
     <xsl:choose>
-      <xsl:when test="starts-with(.//tei:text/@xml:lang, 'bo')">
+      <xsl:when test="starts-with((.//tei:text)[1]/(descendant-or-self::tei:*[@xml:lang])[1]/@xml:lang/string(), 'bo')">
         <xsl:text>tibetan</xsl:text>
       </xsl:when>
-      <xsl:when test="starts-with(.//tei:text/@xml:lang, 'en')">
+      <xsl:when test="starts-with((.//tei:text)[1]/(descendant-or-self::tei:*[@xml:lang])[1]/@xml:lang/string(), 'en')">
         <xsl:text>english</xsl:text>
       </xsl:when>
       <xsl:otherwise>
@@ -3630,7 +3632,7 @@ the beginning of the document</desc>
 	   <xsl:apply-templates select="$bibl/tei:citedRange"/>
 	   <xsl:text>]</xsl:text>
 	 </xsl:when>
-	 <xsl:when test="matches($bibl/text(), '^[0-9A-Za-z.:]+$')">
+	 <xsl:when test="matches(string-join($bibl/text(), ''), '^[0-9A-Za-z.:]+$')">
 	   <xsl:text>[</xsl:text>
 	   <xsl:apply-templates select="$bibl/text()"/>
 	   <xsl:text>]</xsl:text>
