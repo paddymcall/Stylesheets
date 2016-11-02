@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dbk="http://docbook.org/ns/docbook" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:exsl="http://exslt.org/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:saxon="http://saxon.sf.net/" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
-		xmlns:mml="http://www.w3.org/1998/Math/MathML"
-		xmlns:sarit="http://sarit.indology.info/"
-		exclude-result-prefixes="xlink dbk rng tei teix xhtml a html xs xsl" version="2.0">
+<xsl:stylesheet
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    xmlns:dbk="http://docbook.org/ns/docbook"
+    xmlns:exsl="http://exslt.org/common"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+    xmlns:mml="http://www.w3.org/1998/Math/MathML"
+    xmlns:rng="http://relaxng.org/ns/structure/1.0"
+    xmlns:sarit="http://sarit.indology.info/"
+    xmlns:saxon="http://saxon.sf.net/"
+    xmlns:tbx="http://www.lisa.org/TBX-Specification.33.0.html"
+    xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:teix="http://www.tei-c.org/ns/Examples"
+    xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns="http://www.w3.org/1999/xhtml"
+    exclude-result-prefixes="xlink dbk rng tei teix xhtml a html xs xsl tbx"
+    version="2.0">
   <xsl:import href="../../../latex/latex.xsl"/>
 
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
@@ -3920,5 +3937,31 @@ the beginning of the document</desc>
       <xsl:when test="following-sibling::tei:author">, </xsl:when>
     </xsl:choose>
   </xsl:template>
+
+  <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+    <desc>Whether to render something in italic.</desc>
+  </doc>
+  <xsl:function name="tei:render-italic" as="xs:boolean">
+    <xsl:param name="element"/>
+    <xsl:for-each select="$element">
+      <xsl:choose>
+        <xsl:when test="ancestor-or-self::*[@rend][tei:match(@rend,'italic')]">true</xsl:when>
+        <xsl:when test="self::tei:emph">true</xsl:when>
+        <xsl:when test="self::tei:hi[not(@rend)]">true</xsl:when>
+        <xsl:when test="self::tbx:hi[@style='italics']">true</xsl:when>
+	<xsl:when test="matches(@rend,'^ital')">true</xsl:when>
+        <xsl:when test="tei:match(@rend,'ital')">true</xsl:when>
+        <xsl:when test="tei:match(@rend,'it')">true</xsl:when>
+        <xsl:when test="tei:match(@rend,'i')">true</xsl:when>
+        <xsl:when test="tei:match(@rend,'att')">true</xsl:when>
+        <xsl:when test="self::tei:att">true</xsl:when>
+        <xsl:when test="self::tei:speaker">true</xsl:when>
+        <xsl:when test="self::tei:gloss">true</xsl:when>
+        <xsl:when test="self::tei:title">true</xsl:when>
+        <xsl:when test="self::tei:name">true</xsl:when>
+        <xsl:otherwise>false</xsl:otherwise>
+      </xsl:choose>
+    </xsl:for-each>
+  </xsl:function>
 </xsl:stylesheet>
 
