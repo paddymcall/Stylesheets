@@ -1060,7 +1060,7 @@ capable of dealing with UTF-8 directly.
         <xsl:value-of select="tei:lem/@wit"/>
       </xsl:with-param>
       <xsl:with-param name="readings">
-        <xsl:for-each select="tei:rdg">
+        <xsl:for-each select="tei:rdg | tei:rdgGrp/tei:rdg">
           <!--	    <xsl:when test="$lem='' or (not(../tei:lem) and position()=1)"/>-->
           <xsl:call-template name="startLanguage"/>
           <xsl:apply-templates/>
