@@ -3700,7 +3700,8 @@ the beginning of the document</desc>
 		      lower-case($current/@type)='mula' or
 		      lower-case($current/@type)='mūla' or
 		      lower-case($current/@type)='basetext' or
-		      lower-case($current/@type)='base-text'
+		      lower-case($current/@type)='base-text' or
+		      lower-case($current/@type)='lemma'
 		      )">
 	<!-- <xsl:message>Yes, basetext quote</xsl:message> -->
 	<xsl:value-of select="true()"/>
