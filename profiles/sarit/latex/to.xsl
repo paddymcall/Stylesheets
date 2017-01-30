@@ -1001,20 +1001,20 @@ capable of dealing with UTF-8 directly.
     </xsl:choose>
     <xsl:text>}{</xsl:text>
     <xsl:choose>
-      <xsl:when test="$endpoint">
+    <xsl:when test="not($lemma='')">
       <xsl:text>\lemma{</xsl:text>
       <xsl:value-of select="tei:escapeChars($lemma, .)"/>
       <xsl:text>}</xsl:text>
+    </xsl:when>
+    <xsl:otherwise/>
+    </xsl:choose>
+    <xsl:if test="$from and $to and not($from = $to)">
       <xsl:text>\xxref{</xsl:text>
       <xsl:value-of select="$from"/>
       <xsl:text>}{</xsl:text>
       <xsl:value-of select="$to"/>
       <xsl:text>}</xsl:text>
-      </xsl:when>
-      <xsl:when test="$lemma=''">
-	<xsl:text>\lemma{---}</xsl:text>
-      </xsl:when>
-    </xsl:choose>
+    </xsl:if>
     <xsl:text>\Afootnote{</xsl:text>
     <xsl:if test="@xml:id">
       <xsl:text>\label{</xsl:text>
