@@ -310,6 +310,12 @@
   <xsl:param name="currentTEIstartline"/>
   <xsl:param name="relativeLnum"/>
   <xsl:call-template name="makeJson">
+    <xsl:with-param name="title">
+      <xsl:value-of select="$title" />
+    </xsl:with-param>
+    <xsl:with-param name="author">
+      <xsl:value-of select="$author" />
+    </xsl:with-param>
     <xsl:with-param name="systemId" select="$systemId"/>
     <xsl:with-param name="baseURL" select="$baseURL"/>
     <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
@@ -401,6 +407,12 @@
   <xsl:param name="relativeLnum"/>
   <xsl:param name="workId"/>
   <xsl:call-template name="makeJson">
+    <xsl:with-param name="title">
+	<xsl:value-of select="$title" />
+    </xsl:with-param>
+    <xsl:with-param name="author">
+	<xsl:text>Editorial</xsl:text>
+    </xsl:with-param>
     <xsl:with-param name="systemId" select="$systemId"/>
     <xsl:with-param name="baseURL" select="$baseURL"/>
     <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
