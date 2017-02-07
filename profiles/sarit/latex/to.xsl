@@ -3964,5 +3964,41 @@ the beginning of the document</desc>
       </xsl:choose>
     </xsl:for-each>
   </xsl:function>
+
+    <xsl:template match="tei:cit">
+    <xsl:choose>
+      <xsl:when test="tei:match(@rend,'display') or tei:q/tei:p or
+		      tei:quote/tei:l or tei:quote/tei:p">
+        <xsl:text>&#10;\begin{</xsl:text><xsl:value-of select="$quoteEnv"/><xsl:text>}&#10;</xsl:text>
+            <xsl:if test="@n">
+              <xsl:text>(</xsl:text>
+              <xsl:value-of select="@n"/>
+              <xsl:text>) </xsl:text>
+            </xsl:if>
+	    <xsl:sequence select="tei:makeHyperTarget(@xml:id)"/>
+            <xsl:apply-templates select="*[not(self::tei:bibl)]"/>
+	    <xsl:text>\par&#10;</xsl:text>
+            <xsl:apply-templates select="tei:bibl"/>
+        <xsl:text>&#10;\end{</xsl:text><xsl:value-of select="$quoteEnv"/><xsl:text>}&#10;</xsl:text>
+      </xsl:when>
+      <xsl:when test="$ledmac='true' and  (ancestor::tei:p or ancestor::tei:lg) and ./tei:quote">
+	<xsl:text>\edtext{</xsl:text>
+	<xsl:apply-templates select="./tei:quote"/>
+	<xsl:text>}{\Bfootnote{</xsl:text>
+	<xsl:apply-templates select="./*[not(local-name() = 'quote')]"/>
+	<xsl:text>}}</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:value-of select="$preQuote"/>
+	<xsl:if test="@n">
+	  <xsl:text>(</xsl:text>
+	  <xsl:value-of select="@n"/>
+	  <xsl:text>) </xsl:text>
+	</xsl:if>
+	<xsl:apply-templates/>
+	<xsl:value-of select="$postQuote"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
 </xsl:stylesheet>
 
