@@ -38,19 +38,6 @@
   <desc>Set the revision number of the set of files you're indexing.</desc>
 </doc>
 <xsl:param name="revision">UNKNOWN</xsl:param>
-<doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
-  <desc>Whether to produce nested objects or not. If you decide on
-  true, this stylesheet will try to create nested documents
-  (http://www.elastic.co/guide/en/elasticsearch/guide/current/nested-objects.html),
-  in the following way:
-
-  TEI/text/body ==> lg-s,p-s,note-s.
-
-  You have to make sure you have set up the elasticsearch server to
-  map this correctly.
-  </desc>
-</doc>
-<xsl:param name="nested">false</xsl:param>
 
 <xsl:param name="includeXMLSrc">false</xsl:param>
 
@@ -157,19 +144,6 @@
       </xsl:choose>
     </xsl:variable>
 
-    <xsl:if test="$nested='true'">
-      <xsl:call-template name="makeJson">
-	<xsl:with-param name="title" select="$title"/>
-	<xsl:with-param name="author" select="$author" />
-	<xsl:with-param name="systemId" select="$systemId"/>
-	<xsl:with-param name="baseURL" select="$baseURL"/>
-	<xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
-	<xsl:with-param name="workId" select="$workId"/>
-	<xsl:with-param name="xmlId" select="$xmlId"/>
-	<xsl:with-param name="typeName">work</xsl:with-param>
-	<xsl:with-param name="ignoreText">true</xsl:with-param>
-      </xsl:call-template>
-    </xsl:if>
     <xsl:apply-templates select=".//p[not(ancestor::note)]" mode="pars">
       <xsl:with-param name="title"><xsl:value-of select="$title"/></xsl:with-param>
       <xsl:with-param name="author"><xsl:value-of select="$author"/></xsl:with-param>
@@ -319,23 +293,17 @@
   <xsl:param name="relativeLnum"/>
   <xsl:call-template name="makeJson">
     <xsl:with-param name="title">
-      <xsl:if test="$nested!='true'">
-	<xsl:value-of select="$title" />
-      </xsl:if>
+      <xsl:value-of select="$title" />
     </xsl:with-param>
     <xsl:with-param name="author">
-      <xsl:if test="$nested!='true'">
       <xsl:value-of select="$author" />
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="systemId" select="$systemId"/>
     <xsl:with-param name="baseURL" select="$baseURL"/>
     <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
     <xsl:with-param name="typeName" select="$esTypeName"/>
     <xsl:with-param name="parent">
-      <xsl:if test="$nested='true'">
-	<xsl:value-of select="$workId"/>
-      </xsl:if>
+      <xsl:value-of select="$workId"/>
     </xsl:with-param>
     <xsl:with-param name="xmlId">
       <xsl:if test="@xml:id">
@@ -361,23 +329,17 @@
   <xsl:param name="workId"/>
   <xsl:call-template name="makeJson">
     <xsl:with-param name="title">
-      <xsl:if test="$nested!='true'">
 	<xsl:value-of select="$title" />
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="author">
-      <xsl:if test="$nested!='true'">
 	<xsl:value-of select="$author" />
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="systemId" select="$systemId"/>
     <xsl:with-param name="baseURL" select="$baseURL"/>
     <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
     <xsl:with-param name="typeName" select="$esTypeName"/>
     <xsl:with-param name="parent">
-      <xsl:if test="$nested='true'">
 	<xsl:value-of select="$workId"/>
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="xmlId">
       <xsl:if test="@xml:id">
@@ -403,23 +365,17 @@
   <xsl:param name="workId"/>
   <xsl:call-template name="makeJson">
     <xsl:with-param name="title">
-      <xsl:if test="$nested!='true'">
 	<xsl:value-of select="$title" />
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="author">
-      <xsl:if test="$nested!='true'">
 	<xsl:value-of select="$author" />
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="systemId" select="$systemId"/>
     <xsl:with-param name="baseURL" select="$baseURL"/>
     <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
     <xsl:with-param name="typeName" select="$esTypeName"/>
     <xsl:with-param name="parent">
-      <xsl:if test="$nested='true'">
 	<xsl:value-of select="$workId"/>
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="xmlId">
       <xsl:if test="@xml:id">
@@ -443,23 +399,17 @@
   <xsl:param name="workId"/>
   <xsl:call-template name="makeJson">
     <xsl:with-param name="title">
-      <xsl:if test="$nested!='true'">
 	<xsl:value-of select="$title" />
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="author">
-      <xsl:if test="$nested!='true'">
 	<xsl:text>Editorial</xsl:text>
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="systemId" select="$systemId"/>
     <xsl:with-param name="baseURL" select="$baseURL"/>
     <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
     <xsl:with-param name="typeName" select="$esTypeName"/>
     <xsl:with-param name="parent">
-      <xsl:if test="$nested='true'">
 	<xsl:value-of select="$workId"/>
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="xmlId">
       <xsl:if test="@xml:id">
@@ -501,23 +451,17 @@
     <xsl:message>Fallback for <xsl:value-of select="saxon:path()"/></xsl:message>
     <xsl:call-template name="makeJson">
       <xsl:with-param name="title">
-	<xsl:if test="$nested!='true'">
 	  <xsl:value-of select="$title" />
-	</xsl:if>
       </xsl:with-param>
       <xsl:with-param name="author">
-	<xsl:if test="$nested!='true'">
 	  <xsl:value-of select="$author" />
-	</xsl:if>
       </xsl:with-param>
       <xsl:with-param name="systemId" select="$systemId"/>
       <xsl:with-param name="baseURL" select="$baseURL"/>
       <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
       <xsl:with-param name="typeName" select="$esTypeName"/>
       <xsl:with-param name="parent">
-	<xsl:if test="$nested='true'">
 	  <xsl:value-of select="$workId"/>
-	</xsl:if>
       </xsl:with-param>
       <xsl:with-param name="xmlId">
 	<xsl:if test="@xml:id">
