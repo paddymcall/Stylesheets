@@ -3508,9 +3508,11 @@ the beginning of the document</desc>
    <xsl:template match="tei:choice">
      <xsl:choose>
        <xsl:when test="$ledmac='true' and (ancestor::tei:p or ancestor::tei:lg)">
-	 <xsl:text>\edtext{}{</xsl:text>
+	 <xsl:text>\edtext{</xsl:text>
+	 <xsl:apply-templates select="./tei:corr"/>
+	 <xsl:text>}{</xsl:text>
 	 <xsl:text>\lemma{</xsl:text>
-	 <xsl:call-template name="guessLemma"/>
+	 <xsl:apply-templates select="./tei:corr"/>
 	 <xsl:text>}\Afootnote{{\rmlatinfont Correction: }</xsl:text>
 	 <xsl:apply-templates/>
 	 <xsl:text>}}</xsl:text>
@@ -3523,41 +3525,15 @@ the beginning of the document</desc>
    </xsl:template>
 
    <xsl:template match="tei:sic">
+     <xsl:if test="preceding::tei:*">
+       <xsl:text>; </xsl:text>
+     </xsl:if>
      <xsl:apply-templates />
      <xsl:text> {\rmlatinfont (sic!)}</xsl:text>
    </xsl:template>
 
    <xsl:template match="tei:corr">
-     <xsl:variable name="resp">
-       <xsl:choose>
-       <xsl:when test="@resp">
-	 <xsl:value-of select="@resp" />
-       </xsl:when>
-       <xsl:when test="parent::tei:choice[@resp]">
-	 <!-- feeble attempt to follow an internal link -->
-	 <xsl:choose>
-	   <xsl:when test="//*[@xml:id=substring-after(parent::tei:choice/@resp, '#')]">
-	     <xsl:value-of select="//*[@xml:id=substring-after(parent::tei:choice/@resp, '#')][0]/text()"/>
-	   </xsl:when>
-	   <xsl:otherwise>
-	     <xsl:value-of select="substring-after(parent::tei:choice/@resp, '#')"/>
-	   </xsl:otherwise>
-	 </xsl:choose>
-       </xsl:when>
-       <xsl:otherwise>
-	 <xsl:text>encoder</xsl:text>
-       </xsl:otherwise>
-     </xsl:choose>
-     </xsl:variable>
-     <xsl:if test="preceding-sibling::tei:*">
-       <xsl:text>; </xsl:text>
-     </xsl:if>
      <xsl:apply-templates />
-     <xsl:text> {\rmlatinfont (corr by </xsl:text>
-     <xsl:call-template name="makeExternalLink">
-       <xsl:with-param name="dest" select="$resp"/>
-     </xsl:call-template>
-     <xsl:text>)}</xsl:text>
    </xsl:template>
 
    <xsl:template name="guessLemma">
