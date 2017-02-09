@@ -38,19 +38,6 @@
   <desc>Set the revision number of the set of files you're indexing.</desc>
 </doc>
 <xsl:param name="revision">UNKNOWN</xsl:param>
-<doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
-  <desc>Whether to produce nested objects or not. If you decide on
-  true, this stylesheet will try to create nested documents
-  (http://www.elastic.co/guide/en/elasticsearch/guide/current/nested-objects.html),
-  in the following way:
-
-  TEI/text/body ==> lg-s,p-s,note-s.
-
-  You have to make sure you have set up the elasticsearch server to
-  map this correctly.
-  </desc>
-</doc>
-<xsl:param name="nested">false</xsl:param>
 
 <xsl:param name="includeXMLSrc">false</xsl:param>
 
@@ -157,19 +144,6 @@
       </xsl:choose>
     </xsl:variable>
 
-    <xsl:if test="$nested='true'">
-      <xsl:call-template name="makeJson">
-	<xsl:with-param name="title" select="$title"/>
-	<xsl:with-param name="author" select="$author" />
-	<xsl:with-param name="systemId" select="$systemId"/>
-	<xsl:with-param name="baseURL" select="$baseURL"/>
-	<xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
-	<xsl:with-param name="workId" select="$workId"/>
-	<xsl:with-param name="xmlId" select="$xmlId"/>
-	<xsl:with-param name="typeName">work</xsl:with-param>
-	<xsl:with-param name="ignoreText">true</xsl:with-param>
-      </xsl:call-template>
-    </xsl:if>
     <xsl:apply-templates select=".//p[not(ancestor::note)]" mode="pars">
       <xsl:with-param name="title"><xsl:value-of select="$title"/></xsl:with-param>
       <xsl:with-param name="author"><xsl:value-of select="$author"/></xsl:with-param>
@@ -244,10 +218,6 @@
     <xsl:text>", "_id": "</xsl:text>
     <xsl:value-of select="$workId"/>
   </xsl:if>
-  <xsl:if test="$parent!=''">
-    <xsl:text>", "parent": "</xsl:text>
-    <xsl:value-of select="$parent"/>
-  </xsl:if>
   <xsl:text>" }}</xsl:text>
   <xsl:call-template name="newline"/>
   <xsl:text>{  "tag" : "</xsl:text>
@@ -289,14 +259,36 @@
     <xsl:text>", "text" : "</xsl:text>
     <xsl:apply-templates />
   </xsl:if>
-  <xsl:if test="$title!=''">
-    <xsl:text>", "title" : "</xsl:text>
-    <xsl:value-of  select="$title"/>
-  </xsl:if>
-  <xsl:if test="$author!=''">
-    <xsl:text>", "author" : "</xsl:text>
-    <xsl:value-of  select="$author"/>
-  </xsl:if>
+  <xsl:text>", "title" : "</xsl:text>
+  <xsl:choose>
+    <xsl:when test="ancestor::quote[matches(@type, 'base')]">
+      <xsl:value-of select="string-join(ancestor::TEI/teiHeader//title[matches(@subtype, 'base')], ' | ')"/>
+    </xsl:when>
+    <xsl:when test="ancestor::TEI/teiHeader//title[matches(@subtype, 'comm')]">
+      <xsl:value-of select="string-join(ancestor::TEI/teiHeader//title[matches(@subtype, 'comm')], ' | ')"/>
+    </xsl:when>
+    <xsl:when test="$title!=''">
+      <xsl:value-of  select="$title"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:text>NO TITLE</xsl:text>
+    </xsl:otherwise>
+  </xsl:choose>
+  <xsl:text>", "author" : "</xsl:text>
+  <xsl:choose>
+    <xsl:when test="ancestor::quote[matches(@type, 'base')]">
+      <xsl:value-of select="string-join(ancestor::TEI/teiHeader//author[matches(@role, 'base')], ' | ')"/>
+    </xsl:when>
+    <xsl:when test="ancestor::TEI/teiHeader//author[matches(@role, 'comm')]">
+      <xsl:value-of select="string-join(ancestor::TEI/teiHeader//author[matches(@role, 'comm')], ' | ')"/>
+    </xsl:when>
+    <xsl:when test="$author!=''">
+      <xsl:value-of  select="$author"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:text>Anonymous</xsl:text>
+    </xsl:otherwise>
+  </xsl:choose>
   <xsl:if  test="$includeXMLSrc='true'">
     <xsl:text>", "xmlSrc" : "</xsl:text>
     <xsl:value-of select="replace(saxon:serialize(., 'xmlSrc'), '&#x22;', '\\&#x22;')"/>
@@ -319,24 +311,15 @@
   <xsl:param name="relativeLnum"/>
   <xsl:call-template name="makeJson">
     <xsl:with-param name="title">
-      <xsl:if test="$nested!='true'">
-	<xsl:value-of select="$title" />
-      </xsl:if>
+      <xsl:value-of select="$title" />
     </xsl:with-param>
     <xsl:with-param name="author">
-      <xsl:if test="$nested!='true'">
       <xsl:value-of select="$author" />
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="systemId" select="$systemId"/>
     <xsl:with-param name="baseURL" select="$baseURL"/>
     <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
     <xsl:with-param name="typeName" select="$esTypeName"/>
-    <xsl:with-param name="parent">
-      <xsl:if test="$nested='true'">
-	<xsl:value-of select="$workId"/>
-      </xsl:if>
-    </xsl:with-param>
     <xsl:with-param name="xmlId">
       <xsl:if test="@xml:id">
 	<xsl:value-of select="@xml:id"/>
@@ -361,24 +344,15 @@
   <xsl:param name="workId"/>
   <xsl:call-template name="makeJson">
     <xsl:with-param name="title">
-      <xsl:if test="$nested!='true'">
 	<xsl:value-of select="$title" />
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="author">
-      <xsl:if test="$nested!='true'">
 	<xsl:value-of select="$author" />
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="systemId" select="$systemId"/>
     <xsl:with-param name="baseURL" select="$baseURL"/>
     <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
     <xsl:with-param name="typeName" select="$esTypeName"/>
-    <xsl:with-param name="parent">
-      <xsl:if test="$nested='true'">
-	<xsl:value-of select="$workId"/>
-      </xsl:if>
-    </xsl:with-param>
     <xsl:with-param name="xmlId">
       <xsl:if test="@xml:id">
 	<xsl:value-of select="@xml:id"/>
@@ -403,24 +377,15 @@
   <xsl:param name="workId"/>
   <xsl:call-template name="makeJson">
     <xsl:with-param name="title">
-      <xsl:if test="$nested!='true'">
 	<xsl:value-of select="$title" />
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="author">
-      <xsl:if test="$nested!='true'">
 	<xsl:value-of select="$author" />
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="systemId" select="$systemId"/>
     <xsl:with-param name="baseURL" select="$baseURL"/>
     <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
     <xsl:with-param name="typeName" select="$esTypeName"/>
-    <xsl:with-param name="parent">
-      <xsl:if test="$nested='true'">
-	<xsl:value-of select="$workId"/>
-      </xsl:if>
-    </xsl:with-param>
     <xsl:with-param name="xmlId">
       <xsl:if test="@xml:id">
 	<xsl:value-of select="@xml:id"/>
@@ -443,24 +408,15 @@
   <xsl:param name="workId"/>
   <xsl:call-template name="makeJson">
     <xsl:with-param name="title">
-      <xsl:if test="$nested!='true'">
 	<xsl:value-of select="$title" />
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="author">
-      <xsl:if test="$nested!='true'">
 	<xsl:text>Editorial</xsl:text>
-      </xsl:if>
     </xsl:with-param>
     <xsl:with-param name="systemId" select="$systemId"/>
     <xsl:with-param name="baseURL" select="$baseURL"/>
     <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
     <xsl:with-param name="typeName" select="$esTypeName"/>
-    <xsl:with-param name="parent">
-      <xsl:if test="$nested='true'">
-	<xsl:value-of select="$workId"/>
-      </xsl:if>
-    </xsl:with-param>
     <xsl:with-param name="xmlId">
       <xsl:if test="@xml:id">
 	<xsl:value-of select="@xml:id"/>
@@ -501,24 +457,15 @@
     <xsl:message>Fallback for <xsl:value-of select="saxon:path()"/></xsl:message>
     <xsl:call-template name="makeJson">
       <xsl:with-param name="title">
-	<xsl:if test="$nested!='true'">
 	  <xsl:value-of select="$title" />
-	</xsl:if>
       </xsl:with-param>
       <xsl:with-param name="author">
-	<xsl:if test="$nested!='true'">
 	  <xsl:value-of select="$author" />
-	</xsl:if>
       </xsl:with-param>
       <xsl:with-param name="systemId" select="$systemId"/>
       <xsl:with-param name="baseURL" select="$baseURL"/>
       <xsl:with-param name="lang" select="./ancestor-or-self::*[@xml:lang][1]/@xml:lang"/>
       <xsl:with-param name="typeName" select="$esTypeName"/>
-      <xsl:with-param name="parent">
-	<xsl:if test="$nested='true'">
-	  <xsl:value-of select="$workId"/>
-	</xsl:if>
-      </xsl:with-param>
       <xsl:with-param name="xmlId">
 	<xsl:if test="@xml:id">
 	  <xsl:value-of select="@xml:id"/>
