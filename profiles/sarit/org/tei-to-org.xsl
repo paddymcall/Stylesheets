@@ -166,6 +166,14 @@
       </xsl:for-each>
     </xsl:if>
     <xsl:call-template name="newline"/>
+    <xsl:call-template name="newline"/>
+    <xsl:text>⋆ Header</xsl:text>
+    <xsl:call-template name="newline"/>
+    <xsl:call-template name="makeBlock">
+      <xsl:with-param name="style" select="'SRC'"/>
+      <xsl:with-param name="extras" select="'xml'"/>
+    </xsl:call-template>
+    <xsl:call-template name="newline"/>
   </xsl:template>
   
   <xsl:template match="figDesc"/>
@@ -202,9 +210,9 @@
     <xsl:param name="content"/>
     <xsl:variable name="decorator">
       <xsl:choose>
-	<xsl:when test="$class='it' or $class='italic'">/</xsl:when>
-	<xsl:when test="$class='b' or $class='bold'">⋆</xsl:when>
-	<xsl:when test="$class='v' or $class='verbatim'">=</xsl:when>
+	<xsl:when test="matches($class, 'it')">/</xsl:when>
+	<xsl:when test="matches($class, 'b')">⋆</xsl:when>
+	<xsl:when test="matches($class, 'v')">=</xsl:when>
 	<xsl:when test="$class='strike-through'">+</xsl:when>
 	<xsl:when test="$class='underline'">_</xsl:when>
 	<xsl:when test="$class='code'">~</xsl:when>
@@ -282,6 +290,24 @@
     <xsl:apply-templates/>
   </xsl:template>
 
+  <xsl:template match="tei:del">
+    <xsl:text>(- </xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>)</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="tei:add">
+    <xsl:text>(+ </xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>)</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="tei:unclear">
+    <xsl:text>(? </xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>)</xsl:text>
+  </xsl:template>
+
   <xsl:template match="tei:label">
     <xsl:choose>
       <xsl:when test="not(preceding-sibling::*)">
@@ -343,7 +369,7 @@
       <xsl:call-template name="newline"/>
       <xsl:text>⋆ Footnotes</xsl:text>
       <xsl:call-template name="newline"/>
-      <xsl:apply-templates select="//tei:note[not(ancestor::tei:app)]" mode="note" />
+      <xsl:apply-templates select="//tei:note" mode="note" />
     </xsl:if>
   </xsl:template>
 
@@ -370,14 +396,32 @@
     </xsl:choose>
   </xsl:template>
 
-  <xsl:template match="tei:app" />
+  <xsl:template match="tei:app">
+    <xsl:choose>
+      <xsl:when test="ancestor::tei:listApp"/>
+      <xsl:otherwise>
+	<xsl:text>&#8205;</xsl:text>
+	<xsl:text>[fn:c-</xsl:text>
+	<xsl:number level="any" count="tei:app"/>
+	<xsl:text>]</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
   <xsl:template match="tei:listApp" />
 
   <xsl:template match="tei:app" mode="note">
     <xsl:call-template name="newline"/>
     <xsl:text>[fn:c-</xsl:text>
-    <xsl:value-of select="@xml:id"/>
-    <xsl:text>] App entry: </xsl:text>
+    <xsl:number level="any" count="tei:app"/>
+    <xsl:text>] </xsl:text>
+    <xsl:text>App entry: </xsl:text>
+    <xsl:if test="@xml:id">
+      <xsl:call-template name="insertTarget">
+	<xsl:with-param name="target" select="@xml:id"/>
+      </xsl:call-template>
+      <xsl:call-template name="newline"/>
+    </xsl:if>
     <xsl:choose>
       <xsl:when test=".//lem">
 	<xsl:value-of select="(.//lem)[1]"/>
@@ -390,12 +434,6 @@
       </xsl:otherwise>
     </xsl:choose>
     <xsl:call-template name="newline"/>
-    <xsl:if test="@xml:id">
-      <xsl:call-template name="insertTarget">
-	<xsl:with-param name="target" select="@xml:id"/>
-      </xsl:call-template>
-      <xsl:call-template name="newline"/>
-    </xsl:if>
     <xsl:if test="@from">
       <xsl:text>- from </xsl:text>
       <xsl:call-template name="makeOrgLink">
@@ -425,14 +463,19 @@
     <xsl:value-of select="local-name()"/>
     <xsl:text>: </xsl:text>
     <xsl:apply-templates />
-    <xsl:if test="@wit or @cit">
-      <xsl:text> ([[</xsl:text>
-      <xsl:value-of select="@wit"/>
-      <xsl:value-of select="@cit"/>
-      <xsl:text>][</xsl:text>
-      <xsl:value-of select="@wit"/>
-      <xsl:value-of select="@cit"/>
-      <xsl:text>]])</xsl:text>
+    <xsl:if test="@wit">
+      <xsl:text> (</xsl:text>
+      <xsl:call-template name="insertLink">
+	<xsl:with-param name="target" select="@wit"/>
+      </xsl:call-template>
+      <xsl:text>) </xsl:text>
+    </xsl:if>
+    <xsl:if test="@cit">
+      <xsl:text> (</xsl:text>
+      <xsl:call-template name="insertLink">
+	<xsl:with-param name="target" select="@cit"/>
+      </xsl:call-template>
+      <xsl:text>) </xsl:text>
     </xsl:if>
     <xsl:call-template name="newline"/>
   </xsl:template>
@@ -448,7 +491,7 @@
   <xsl:template match="tei:note" mode="note">
     <xsl:call-template name="newline"/>
     <xsl:text>[fn:</xsl:text>
-    <xsl:value-of select="position()"/>
+    <xsl:number level="any" count="tei:note"/>
     <xsl:text>] </xsl:text>
     <xsl:apply-templates mode="note"/>
   </xsl:template>
@@ -482,20 +525,49 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template match="tei:lb"/>
+  <xsl:template match="tei:pb"/>
+
+  <xsl:template match="tei:choice">
+    <xsl:text>[ </xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>] </xsl:text>
+  </xsl:template>
+    
+  <xsl:template match="tei:corr">
+    <xsl:apply-templates/>
+    <xsl:text> (corr.)</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="tei:sic">
+    <xsl:apply-templates/>
+    <xsl:text> (sic)</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="tei:q">
+    <xsl:text>``</xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>"</xsl:text>
+  </xsl:template>
+  
+  <xsl:template match="tei:anchor[@xml:id]">
+    <xsl:call-template name="insertTarget">
+      <xsl:with-param name="target" select="@xml:id"/>
+    </xsl:call-template>
+  </xsl:template>
+
   <xsl:template name="newline">
     <xsl:text>&#10;</xsl:text>
   </xsl:template>
 
   <xsl:template match="*">
     <xsl:if test="@xml:id and
-		  not(
-		  starts-with(local-name(), 'div') and
-		  not(child::tei:head)
-		  )">
+		  not(matches(local-name(), '^div') and count(child::tei:head) > 0)">
       <xsl:call-template name="insertTarget">
 	<xsl:with-param name="target" select="@xml:id"/>
       </xsl:call-template>
     </xsl:if>
+    <xsl:message>Default processing for <xsl:value-of select="saxon:path()"/></xsl:message> 
     <xsl:apply-templates/>
   </xsl:template>
 
@@ -509,11 +581,26 @@
     <xsl:text>&lt;&lt;</xsl:text>
     <xsl:value-of select="$target"/>
     <xsl:text>&gt;&gt;</xsl:text>
-    <xsl:for-each select="//tei:app[@to=concat('#', $target)]">
+    <!-- insert reference to possible later app -->
+    <xsl:for-each select="//tei:app[@to|@from=concat('#', $target)]">
       <xsl:text>[fn:c-</xsl:text>
-      <xsl:value-of select="@xml:id"/>
+      <xsl:number level="any" count="tei:app"/>
       <xsl:text>]</xsl:text>
     </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template name="insertLink">
+    <xsl:param name="target"/>
+    <xsl:text>[[</xsl:text>
+    <xsl:choose>
+      <xsl:when test="matches($target, '^#')">
+	<xsl:value-of select="substring-after($target, '#')"/>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:value-of select="$target"/>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text>]]</xsl:text>
   </xsl:template>
   
 </xsl:stylesheet>
