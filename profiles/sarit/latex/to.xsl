@@ -3327,9 +3327,19 @@ the beginning of the document</desc>
     <xsl:param name="element" />
     <xsl:param name="targets" />
     <xsl:param name="separator">,</xsl:param>
+    <xsl:variable name="realTargets">
+      <xsl:choose>
+	<xsl:when test="count($targets) &gt; 0">
+	  <xsl:value-of select="$targets"/>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:value-of select="(./tei:ref/@target)[1]"/>
+	</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:variable name="refs">
       <refs>
-	<xsl:for-each select="tokenize(normalize-space($targets), '\s')">
+	<xsl:for-each select="tokenize(normalize-space($realTargets), '\s')">
 	  <!-- normalize url to base, and then split: #1 is protocol+server+filename, #2 is the '#' part, if it exists -->
 	  <ref><xsl:value-of select="tokenize(resolve-uri(., base-uri($element)), '[?#&amp;]')[2]"/></ref>
 	</xsl:for-each>
@@ -3609,6 +3619,7 @@ the beginning of the document</desc>
        <xsl:otherwise />
      </xsl:choose>
    </xsl:template>
+   <doc>Encoding bibl-s. See https://github.com/TEIC/TEI/issues/1431 for the current state of this.</doc>
    <xsl:template match="tei:bibl">
      <xsl:variable name="bibl" select="self::tei:bibl"/>
      <xsl:variable name="refs">
