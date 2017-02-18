@@ -234,20 +234,20 @@ capable of dealing with UTF-8 directly.
   <xsl:text>
   \usepackage{fontspec}
   %% redefine some chars (either changed by parsing, or not commonly in font)
-  \catcode`⃥=\active \def⃥{\textbackslash}
-  \catcode`‿=\active \def‿{\textunderscore}
-  \catcode`❴=\active \def❴{\{}
-  \catcode`❵=\active \def❵{\}}
-  \catcode`〔=\active \def〔{{[}}% translate 〔OPENING TORTOISE SHELL BRACKET
-  \catcode`〕=\active \def〕{{]}}% translate 〕CLOSING TORTOISE SHELL BRACKET
-  \catcode` =\active \def {\,}
-  \catcode`·=\active \def·{$\bullet$}
+  \catcode`&#8421;=\active \def&#8421;{\textbackslash}% ⃥ COMBINING REVERSE SOLIDUS OVERLAY
+  \catcode`&#8255;=\active \def&#8255;{\textunderscore}% ‿ UNDERTIE
+  \catcode`&#10100;=\active \def&#10100;{\{}% MEDIUM LEFT CURLY BRACKET ORNAMENT
+  \catcode`&#10101;=\active \def&#10101;{\}}% ❵ MEDIUM RIGHT CURLY BRACKET ORNAMENT
+  \catcode`&#12308;=\active \def&#12308;{{[}}% translate 〔OPENING TORTOISE SHELL BRACKET
+  \catcode`&#12309;=\active \def&#12309;{{]}}% translate 〕CLOSING TORTOISE SHELL BRACKET
+  \catcode`&#160;=\active \def&#160;{\,}% NO-BREAK SPACE 
+  \catcode`&#183;=\active \def&#183;{$\bullet$}% MIDDLE DOT ·
   %% \catcode`…=\active \def…{{\normalfontlatin\ldots}}%% won't work?
-  \catcode`…=\active \def…{...}
+  \catcode`&#8230;=\active \def&#8230;{...}% … HORIZONTAL ELLIPSIS
   %% BREAK PERMITTED HERE: \discretionary{-}{}{}\nobreak\hspace{0pt}
-  \catcode`=\active \def{\-}
-  \catcode`ꣵ=\active \defꣵ{%
-  </xsl:text>
+  \catcode`&#130;=\active \def&#130;{\-}
+  % DEVANAGARI SIGN CANDRABINDU TWO
+  \catcode`&#43253;=\active \def&#43253;{</xsl:text>
   <xsl:choose>
     <xsl:when test="$defaultlanguage='sanskrit'">
       <xsl:text>म्</xsl:text>
@@ -259,8 +259,8 @@ capable of dealing with UTF-8 directly.
   <xsl:text>\textsuperscript{cb}%for candrabindu
   }
   % arrows not in standard font
-  \catcode`↤=\active \def↤{$\leftarrow$}
-  \catcode`↦=\active \def↦{$\rightarrow$}
+  \catcode`&#8612;=\active \def&#8612;{$\leftarrow$}% ↤ LEFTWARDS ARROW FROM BAR
+  \catcode`&#8614;=\active \def&#8614;{$\rightarrow$}% ↦ RIGHTWARDS ARROW FROM BAR
   %% show a lot of tolerance
   \tolerance=9000
   \def\textJapanese{\fontspec{Kochi Mincho}}
