@@ -1125,7 +1125,7 @@ capable of dealing with UTF-8 directly.
 	  </xsl:if>
 	  <xsl:if test="following::node()[1][
 			self::text() and
-			matches(self::text(), '^[^\s ]')]">
+			matches(self::text(), '^[^\s&#160;]')]">
 	    <xsl:text></xsl:text>
 	  </xsl:if>
         </xsl:if>
@@ -1716,7 +1716,7 @@ the beginning of the document</desc>
         <xsl:text>}</xsl:text>
 	<xsl:if test="following::node()[1][
 		      self::text() and
-		      matches(self::text(), '^[^\s ]')]">
+		      matches(self::text(), '^[^\s&#160;]')]">
 	  <xsl:text></xsl:text>
 	</xsl:if>
       </xsl:when>
