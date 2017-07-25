@@ -921,11 +921,14 @@ capable of dealing with UTF-8 directly.
        \def\select@lemmafont#1|#2|#3|#4|#5|#6|#7|%
        {}
        \makeatother
-       \AtEveryPstart{\refstepcounter{parCount}}
+       %% refstepcounter introduces vertical space
+       \AtEveryPstart{\addtocounter{parCount}{1}}
+       \AtEveryStanza{\vspace{\parskip}\addtocounter{parCount}{1}}
+       % \AtEveryStopStanza{{\color{gray}{\rmlatinfont\textsuperscript{§~\theparCount}}}}
        \setlength{\stanzaindentbase}{20pt}
-     \setstanzaindents{3,</xsl:text>
+     \setstanzaindents{4,</xsl:text>
     <xsl:for-each select="1 to tei:maxstanzalines(.)">
-      <xsl:text>2,2,</xsl:text>
+      <xsl:text>3,3,</xsl:text>
     </xsl:for-each>
     <xsl:text>}
      % \setstanzapenalties{1,5000,10500}
@@ -1111,7 +1114,7 @@ capable of dealing with UTF-8 directly.
         <xsl:if test="not(child::tei:lg)">
 	  <xsl:text>
 	    
-	    \stanza[\smallbreak]
+	    \stanza
 	  </xsl:text>
 	</xsl:if>
 	<xsl:if test="@xml:id">
@@ -1143,9 +1146,8 @@ capable of dealing with UTF-8 directly.
         </xsl:choose>
         <xsl:apply-templates/>
 	<xsl:if test="not(child::tei:lg)">
-	  <xsl:text>\&amp;[\smallbreak]
-	  
-	  
+	  <xsl:text>{\color{gray}{\rmlatinfont\textsuperscript{§~\theparCount}}}\&amp;
+
 	  </xsl:text>
 	</xsl:if>
         
