@@ -158,6 +158,7 @@ of this software, even if advised of the possibility of such damage.
   <xsl:param name="ledmacNumberDepth">1</xsl:param>
   <xsl:param  name="ledmac-firstlinenum">5</xsl:param>
   <xsl:param  name="ledmac-linenumincrement">5</xsl:param>
+  <xsl:param name="debug" as="xs:boolean">false</xsl:param>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
     <desc>An output format for saxon's serialize</desc>
   </doc>
@@ -421,7 +422,9 @@ capable of dealing with UTF-8 directly.
     </xsl:choose>
     <xsl:choose>
       <xsl:when test="$documentclass='memoir'">
-	<xsl:message>Line spacing: <xsl:value-of select="$lineSpacing"/></xsl:message>
+	<xsl:if test="$debug">
+	  <xsl:message>Line spacing: <xsl:value-of select="$lineSpacing"/></xsl:message>
+	</xsl:if>
 	<xsl:choose>
 	  <xsl:when test="$lineSpacing=1.5">
 	    <xsl:text>
@@ -735,7 +738,9 @@ capable of dealing with UTF-8 directly.
 		 <xsl:text>}</xsl:text>
 	       </xsl:when>
 	     <xsl:otherwise>
-	       <xsl:message>No bibliographies found!</xsl:message>
+	       <xsl:if test="$debug">
+		 <xsl:message>No bibliographies found!</xsl:message>
+	       </xsl:if>
 	     </xsl:otherwise>
 	     </xsl:choose>
 	   </xsl:otherwise>
@@ -1024,7 +1029,9 @@ capable of dealing with UTF-8 directly.
       <xsl:value-of select="@xml:id"/>
       <xsl:text>}</xsl:text>
     </xsl:if>
-    <xsl:message>Lemma has witnesses: <xsl:value-of select="$lemmawitness"/></xsl:message>
+    <xsl:if test="$debug">
+      <xsl:message>Lemma has witnesses: <xsl:value-of select="$lemmawitness"/></xsl:message>
+    </xsl:if>
     <xsl:if test="string-length($lemmawitness) > 0">
       <xsl:text> \cite{</xsl:text>
       <xsl:call-template  name="URIsToBibRefs">
@@ -1353,7 +1360,9 @@ the beginning of the document</desc>
 	</xsl:if>
         <xsl:apply-templates/>
 	<xsl:if test="following-sibling::tei:l">
-	  <xsl:message>Breaking verse</xsl:message>
+	  <xsl:if test="$debug">
+	    <xsl:message>Breaking verse</xsl:message>
+	  </xsl:if>
 	  <xsl:text> \\
 	  </xsl:text>
 	</xsl:if>
@@ -1364,11 +1373,15 @@ the beginning of the document</desc>
     <desc>Process element &lt;p&gt;. Try to avoid \par constructs.</desc>
   </doc>
   <xsl:template match="tei:p">
-    <xsl:message>Processing a par</xsl:message>
+    <xsl:if test="$debug">
+      <xsl:message>Processing a par</xsl:message>
+    </xsl:if>
     <xsl:call-template name="startLanguage"/>
     <xsl:choose>
       <xsl:when test="parent::tei:note and not(preceding-sibling::tei:p)">
-        <xsl:message>Processing a par: do nothing</xsl:message>
+        <xsl:if test="$debug">
+	  <xsl:message>Processing a par: do nothing</xsl:message>
+	</xsl:if>
       </xsl:when>
       <xsl:when test="$ledmac='true' and
 		      not(
@@ -1378,7 +1391,9 @@ the beginning of the document</desc>
 		      ancestor::tei:p or
 		      not(child::node())
 		      )">
-        <xsl:message>Processing a main text par in ledmac mode</xsl:message>
+        <xsl:if test="$debug">
+	  <xsl:message>Processing a main text par in ledmac mode</xsl:message>
+	</xsl:if>
         <xsl:choose>
           <xsl:when test="$leftside">
             <xsl:text>\begin{Leftside}</xsl:text>
@@ -1410,7 +1425,9 @@ the beginning of the document</desc>
 	<xsl:text> --- </xsl:text>	
       </xsl:when>
       <xsl:when test="parent::tei:div or parent::tei:quote">
-        <xsl:message>Par in simple mode</xsl:message>
+        <xsl:if test="$debug">
+	  <xsl:message>Par in simple mode</xsl:message>
+	</xsl:if>
         <xsl:text>
 	  
 	</xsl:text>
@@ -1448,12 +1465,17 @@ the beginning of the document</desc>
   </xsl:template>
   <xsl:template name="insertApp">
     <xsl:param name="elementID"/>
-    <xsl:message>
+    <xsl:if test="$debug">
+      <xsl:message>
       <xsl:text>Calling insertApp with </xsl:text>
       <xsl:value-of select="$elementID"/>
-    </xsl:message>
+      </xsl:message>
+    </xsl:if>
     <xsl:for-each select="//tei:TEI/tei:text/tei:back//tei:listApp/tei:app[@from=concat('#', $elementID)]">
-      <!-- <xsl:message>Found a match.</xsl:message> -->
+      <!-- <xsl:if test="$debug">
+	   <xsl:message>Found a match.</xsl:message>
+	   </xsl:if>
+      -->
       <xsl:call-template name="makeApp">
         <xsl:with-param name="endpoint" select="true()"/>
       </xsl:call-template>
@@ -1625,7 +1647,9 @@ the beginning of the document</desc>
 	    </xsl:choose>
           </xsl:when>
           <xsl:otherwise>
-	    <xsl:message>Creating inline quote</xsl:message>
+	    <xsl:if test="$debug">
+	      <xsl:message>Creating inline quote</xsl:message>
+	    </xsl:if>
 	    <xsl:value-of select="$preQuote"/>
 	    <xsl:apply-templates/>
 	    <xsl:value-of select="$postQuote"/>
@@ -1636,7 +1660,9 @@ the beginning of the document</desc>
         <xsl:apply-templates/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:message>Default quote environment</xsl:message>
+        <xsl:if test="$debug">
+	  <xsl:message>Default quote environment</xsl:message>
+	</xsl:if>
         <xsl:value-of select="$preQuote"/>
         <xsl:apply-templates/>
         <xsl:value-of select="$postQuote"/>
@@ -1648,7 +1674,9 @@ the beginning of the document</desc>
     <desc>Process a note element which has a @place for footnote</desc>
   </doc>
   <xsl:template name="footNote">
-    <xsl:message>Setting footnote</xsl:message>
+    <xsl:if test="$debug">
+      <xsl:message>Setting footnote</xsl:message>
+    </xsl:if>
     
     <xsl:choose>
       <xsl:when test="$ledmac='true' and
@@ -1723,7 +1751,9 @@ the beginning of the document</desc>
 	</xsl:if>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:message>Note in weird context.</xsl:message>
+        <xsl:if test="$debug">
+	  <xsl:message>Note in weird context.</xsl:message>
+	</xsl:if>
         <xsl:text>[[</xsl:text>
         <xsl:apply-templates/>
         <xsl:text>]]</xsl:text>
@@ -1946,7 +1976,11 @@ the beginning of the document</desc>
   </xsl:param>
   <xsl:template name="startLanguage">
     <xsl:param name="lang" select="@xml:lang/string()"/>
-    <xsl:message>Starting language at <xsl:value-of select="saxon:path(.)"/>: <xsl:value-of select="$lang"/></xsl:message>
+    <xsl:if test="$debug">
+      <xsl:if test="$debug">
+      <xsl:message>Starting language at <xsl:value-of select="saxon:path(.)"/>: <xsl:value-of select="$lang"/></xsl:message>
+      </xsl:if>
+    </xsl:if>
     <xsl:if test="boolean($lang)">
       <xsl:choose>
 	<xsl:when test="self::tei:head">
@@ -2548,7 +2582,9 @@ the beginning of the document</desc>
 	</xsl:text>
       </xsl:when>
       <xsl:otherwise>
-	<xsl:message>Falling back to makeQuote template</xsl:message>
+	<xsl:if test="$debug">
+	  <xsl:message>Falling back to makeQuote template</xsl:message>
+	</xsl:if>
         <xsl:call-template name="makeQuote"/>
       </xsl:otherwise>
     </xsl:choose>
@@ -2561,7 +2597,9 @@ the beginning of the document</desc>
     <xsl:param name="depth">
       <xsl:value-of select="count(ancestor::tei:div[ancestor::tei:text])"/>
     </xsl:param>
-    <xsl:message>Head element found.</xsl:message>    
+    <xsl:if test="$debug">
+      <xsl:message>Head element found.</xsl:message>
+    </xsl:if>
     <xsl:choose>
       <xsl:when test="parent::tei:castList"/>
       <xsl:when test="parent::tei:figure"/>
@@ -2570,7 +2608,11 @@ the beginning of the document</desc>
       <xsl:when test="parent::tei:table"/>
       <xsl:when test="preceding-sibling::tei:head"/>
       <xsl:otherwise>
-        <xsl:message>Depth of this head (<xsl:value-of select="."/>): <xsl:value-of select="$depth"/>.</xsl:message>
+        <xsl:if test="$debug">
+	  <xsl:if test="$debug">
+	  <xsl:message>Depth of this head (<xsl:value-of select="."/>): <xsl:value-of select="$depth"/>.</xsl:message>
+	  </xsl:if>
+	</xsl:if>
         <xsl:text>
 \</xsl:text>
         <xsl:choose>
@@ -2586,7 +2628,9 @@ the beginning of the document</desc>
             </xsl:choose>
           </xsl:when>
           <xsl:when test="$documentclass='memoir'">
-            <xsl:message>Processing head for memoir class.</xsl:message>
+            <xsl:if test="$debug">
+	      <xsl:message>Processing head for memoir class.</xsl:message>
+	    </xsl:if>
             <xsl:choose>
               <xsl:when test="parent::tei:div[@type='part'] or $depth=0">part</xsl:when>
               <xsl:when test="$depth=1">chapter</xsl:when>
@@ -2717,7 +2761,9 @@ the beginning of the document</desc>
     <xsl:template match="tei:trailer|tei:label[@type='trailer']">
       <xsl:choose>
 	<xsl:when test="$ledmac='true'">
-	  <xsl:message>Trailer in ledmac mode</xsl:message>
+	  <xsl:if test="$debug">
+	    <xsl:message>Trailer in ledmac mode</xsl:message>
+	  </xsl:if>
 	  <xsl:if test="not(self::tei:label) and not(parent::tei:div or parent::tei:p or parent::tei:lg) and not(preceding-sibling::tei:trailer)">
 	    <xsl:text>
 	      
@@ -2760,7 +2806,9 @@ the beginning of the document</desc>
 	  </xsl:if>
 	</xsl:when>
 	<xsl:otherwise>
-	  <xsl:message>Trailer without ledmac</xsl:message>
+	  <xsl:if test="$debug">
+	    <xsl:message>Trailer without ledmac</xsl:message>
+	  </xsl:if>
 	  <xsl:text>
 	    
 	    \begin{center}
@@ -2795,7 +2843,9 @@ the beginning of the document</desc>
       </xsl:when>
       <xsl:otherwise>
 	<xsl:for-each select="$context/ancestor-or-self::tei:TEI/tei:teiHeader//tei:titleStmt/tei:title[not(matches(@type, 'sub') or matches(@type, 'pre'))]">
-	  <xsl:message>Doing title <xsl:value-of select="."/></xsl:message>
+	  <xsl:if test="$debug">
+	    <xsl:message>Doing title <xsl:value-of select="."/></xsl:message>
+	  </xsl:if>
 	  <xsl:call-template name="startLanguage">
 	    <xsl:with-param name="lang" select="(ancestor-or-self::*[@xml:lang]/@xml:lang/string())[1]"/>
 	  </xsl:call-template>
@@ -2908,7 +2958,9 @@ the beginning of the document</desc>
         <xsl:call-template name="footNote"/>
       </xsl:when>
       <xsl:when test="@place">
-        <xsl:message>unknown @place for note: <xsl:value-of select="@place"/></xsl:message>
+        <xsl:if test="$debug">
+	  <xsl:message>unknown @place for note: <xsl:value-of select="@place"/></xsl:message>
+	</xsl:if>
         <xsl:call-template name="footNote"/>
       </xsl:when>
       <xsl:otherwise>
@@ -3042,7 +3094,11 @@ the beginning of the document</desc>
     <desc>Process element listBibl. This should be handled by biblatex.</desc>
   </doc>
   <xsl:template match="tei:listBibl">
-    <xsl:message>Processing listBibl. Won't do anything much here, configure biblatex.</xsl:message>
+    <xsl:if test="$debug">
+      <xsl:if test="$debug">
+      <xsl:message>Processing listBibl. Won't do anything much here, configure biblatex.</xsl:message>
+      </xsl:if>
+    </xsl:if>
     <xsl:text>
        \chapter{Bibliographical Hacks}
        \begin{minted}[fontfamily=rmfamily,fontsize=\footnotesize]{xml}
@@ -3065,7 +3121,9 @@ the beginning of the document</desc>
       </xsl:when>
       <!-- omit empty ref elements that do not have @target -->
       <xsl:when test="self::tei:ref and not(@target) and not(descendant-or-self::text())">
-        <xsl:message>Can't process ref <xsl:value-of select="node()"/></xsl:message>
+        <xsl:if test="$debug">
+	  <xsl:message>Can't process ref <xsl:value-of select="node()"/></xsl:message>
+	</xsl:if>
       </xsl:when>
       <xsl:otherwise>
         <xsl:variable name="ptr" select="if (self::tei:ptr) then           true() else false()"/>
@@ -3104,7 +3162,9 @@ the beginning of the document</desc>
           <xsl:otherwise>
             <xsl:for-each select="tokenize(normalize-space(@target),' ')">
               <xsl:variable name="a" select="."/>
-	      <xsl:message>Making link for <xsl:value-of select="$a"/></xsl:message>
+	      <xsl:if test="$debug">
+		<xsl:message>Making link for <xsl:value-of select="$a"/></xsl:message>
+	      </xsl:if>
               <xsl:for-each select="$here">
                 <xsl:choose>
                   <!-- If there is a target attribute starting with #, it is always a local reference -->
@@ -3276,11 +3336,15 @@ the beginning of the document</desc>
   <xsl:template name="makeCiteFromWit">
     <xsl:param name="witnesses"/>
     <xsl:for-each select="tokenize(normalize-space($witnesses), ' ')">
-      <xsl:message>Parsing witness: <xsl:value-of select="."/>.</xsl:message>
+      <xsl:if test="$debug">
+	<xsl:message>Parsing witness: <xsl:value-of select="."/>.</xsl:message>
+      </xsl:if>
       <xsl:variable name="witPath">
 	<xsl:choose>
 	  <xsl:when test="matches(., '^#')">
-	    <xsl:message>internal reference, making absolute.</xsl:message>
+	    <xsl:if test="$debug">
+	      <xsl:message>internal reference, making absolute.</xsl:message>
+	    </xsl:if>
 	    <xsl:choose>
 	      <xsl:when test="matches(replace(.,'^#', ''), '#')">
 		<xsl:value-of select="substring-before(replace(.,'^#', ''), '#')"/>
@@ -3291,7 +3355,9 @@ the beginning of the document</desc>
 	    </xsl:choose>
 	  </xsl:when>
 	  <xsl:when test="matches(., '#')">
-	    <xsl:message>absolute reference.</xsl:message>
+	    <xsl:if test="$debug">
+	      <xsl:message>absolute reference.</xsl:message>
+	    </xsl:if>
 	    <xsl:value-of select="substring-before(., '#')"/>
 	  </xsl:when>
 	  <xsl:otherwise>
@@ -3299,7 +3365,9 @@ the beginning of the document</desc>
 	  </xsl:otherwise>
 	</xsl:choose>
       </xsl:variable>
-      <xsl:message>witPath: <xsl:value-of select="$witPath"/></xsl:message>
+      <xsl:if test="$debug">
+	<xsl:message>witPath: <xsl:value-of select="$witPath"/></xsl:message>
+      </xsl:if>
       <xsl:variable name="witID">
 	<xsl:choose>
 	  <xsl:when test="matches(., '^#')">
@@ -3312,7 +3380,9 @@ the beginning of the document</desc>
 	  </xsl:otherwise>
 	</xsl:choose>
       </xsl:variable>
-      <xsl:message>witID: <xsl:value-of select="$witID"/></xsl:message>
+      <xsl:if test="$debug">
+	<xsl:message>witID: <xsl:value-of select="$witID"/></xsl:message>
+      </xsl:if>
       <xsl:text> \cite</xsl:text>
       <xsl:text>{</xsl:text>
       <xsl:value-of select="$witID"/>
@@ -3347,14 +3417,18 @@ the beginning of the document</desc>
 	</xsl:for-each>
       </refs>
     </xsl:variable>
-    <xsl:message>Returning: <xsl:value-of select="string-join($refs//text(), $separator)"/></xsl:message>
+    <xsl:if test="$debug">
+      <xsl:message>Returning: <xsl:value-of select="string-join($refs//text(), $separator)"/></xsl:message>
+    </xsl:if>
     <xsl:value-of select="string-join($refs//text(), $separator)"/>
   </xsl:template>
 
   <xsl:template match="tei:span">
     <xsl:choose>
       <xsl:when test="@rend='hidden'">
-	<xsl:message>Not processing hidden span element: <xsl:value-of select="."/></xsl:message>
+	<xsl:if test="$debug">
+	  <xsl:message>Not processing hidden span element: <xsl:value-of select="."/></xsl:message>
+	</xsl:if>
       </xsl:when>
       <xsl:otherwise>
 	<xsl:call-template name="makeSpan"/>
@@ -3680,7 +3754,9 @@ the beginning of the document</desc>
 
   <xsl:function name="sarit:is-basetext-quote" as="xs:boolean">
     <xsl:param name="current"/>
-    <!-- <xsl:message>Checking for basetext quote</xsl:message> -->
+    <xsl:if test="$debug">
+      <xsl:message>Checking for basetext quote</xsl:message>
+    </xsl:if>
     <xsl:choose>
       <xsl:when test="$current/@type and
 		      (
@@ -3692,11 +3768,9 @@ the beginning of the document</desc>
 		      lower-case($current/@type)='base-text' or
 		      lower-case($current/@type)='lemma'
 		      )">
-	<!-- <xsl:message>Yes, basetext quote</xsl:message> -->
 	<xsl:value-of select="true()"/>
       </xsl:when>
       <xsl:otherwise>
-	<!-- <xsl:message>Nope, no basetext quote</xsl:message> -->
 	<xsl:value-of select="false()"/>
       </xsl:otherwise>
     </xsl:choose>    
