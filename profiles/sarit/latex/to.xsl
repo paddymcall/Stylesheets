@@ -1487,7 +1487,7 @@ the beginning of the document</desc>
   <xsl:template match="tei:anchor">
     <xsl:choose>
       <xsl:when test="$ledmac='true'">
-	<xsl:if test="(parent::tei:p or parent::tei:lg) and not(parent::tei:note)">
+	<xsl:if test="(ancestor::tei:p or ancestor::tei:lg) and not(parent::tei:note)">
           <xsl:text>\edlabel{</xsl:text>
           <xsl:value-of select="@xml:id"/>
           <xsl:text>}</xsl:text>
