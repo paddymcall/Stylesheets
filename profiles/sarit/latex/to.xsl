@@ -1074,7 +1074,11 @@ capable of dealing with UTF-8 directly.
           <!--	    <xsl:when test="$lem='' or (not(../tei:lem) and position()=1)"/>-->
           <xsl:call-template name="startLanguage"/>
           <xsl:apply-templates/>
-          <xsl:if test="@cause='omission'">[]</xsl:if>
+          <xsl:if test="@cause">
+	    <xsl:text>\normalfontlatin{[Cause: </xsl:text>
+	    <xsl:value-of select="@cause/string()"/>
+	    <xsl:text>]}</xsl:text>
+	  </xsl:if>
 	  <xsl:call-template name="endLanguage"/>
 	  <xsl:if test="string-length(@wit) > 0">
 	    <xsl:text> \cite{</xsl:text>
