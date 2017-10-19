@@ -243,7 +243,7 @@ capable of dealing with UTF-8 directly.
   \catcode`&#12309;=\active \def&#12309;{{]}}% translate 〕CLOSING TORTOISE SHELL BRACKET
   \catcode`&#160;=\active \def&#160;{\,}% NO-BREAK SPACE 
   \catcode`&#183;=\active \def&#183;{$\bullet$}% MIDDLE DOT ·
-  %% \catcode`…=\active \def…{{\normalfontlatin\ldots}}%% won't work?
+  %% \catcode`…=\active \def…{{\rmlatinfont\ldots}}%% won't work?
   \catcode`&#8230;=\active \def&#8230;{...}% … HORIZONTAL ELLIPSIS
   %% BREAK PERMITTED HERE: \discretionary{-}{}{}\nobreak\hspace{0pt}
   \catcode`&#130;=\active \def&#130;{\-}
@@ -1023,7 +1023,14 @@ capable of dealing with UTF-8 directly.
       <xsl:value-of select="$to"/>
       <xsl:text>}</xsl:text>
     </xsl:if>
-    <xsl:text>\Afootnote{</xsl:text>
+    <xsl:choose>
+      <xsl:when test="@type and matches(lower-case(@type), 'note')">
+	<xsl:text>\Bfootnote{</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:text>\Afootnote{</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
     <xsl:if test="@xml:id">
       <xsl:text>\label{</xsl:text>
       <xsl:value-of select="@xml:id"/>
@@ -1074,11 +1081,6 @@ capable of dealing with UTF-8 directly.
           <!--	    <xsl:when test="$lem='' or (not(../tei:lem) and position()=1)"/>-->
           <xsl:call-template name="startLanguage"/>
           <xsl:apply-templates/>
-          <xsl:if test="@cause">
-	    <xsl:text>\normalfontlatin{[Cause: </xsl:text>
-	    <xsl:value-of select="@cause/string()"/>
-	    <xsl:text>]}</xsl:text>
-	  </xsl:if>
 	  <xsl:call-template name="endLanguage"/>
 	  <xsl:if test="string-length(@wit) > 0">
 	    <xsl:text> \cite{</xsl:text>
@@ -1087,6 +1089,11 @@ capable of dealing with UTF-8 directly.
 	      <xsl:with-param name="targets" select="@wit"/>
 	    </xsl:call-template>
 	    <xsl:text>} </xsl:text>
+	  </xsl:if>
+	  <xsl:if test="@cause">
+	    <xsl:text> \rmlatinfont{[Cause: </xsl:text>
+	    <xsl:value-of select="@cause/string()"/>
+	    <xsl:text>]}</xsl:text>
 	  </xsl:if>
           <xsl:if test="following-sibling::tei:rdg">; </xsl:if>
         </xsl:for-each>
@@ -1345,7 +1352,7 @@ the beginning of the document</desc>
       </xsl:when>
       <xsl:otherwise>
 	<xsl:if test="boolean($showLineBreaks)">
-	  <xsl:text>\textsubscript{\normalfontlatin </xsl:text>
+	  <xsl:text>\textsubscript{\rmlatinfont </xsl:text>
 	  <xsl:choose>
           <xsl:when test="@n">
             <xsl:value-of select="tei:escapeChars(@n, .)"/>
