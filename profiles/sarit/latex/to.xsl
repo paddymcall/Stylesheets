@@ -153,7 +153,7 @@ of this software, even if advised of the possibility of such damage.
   <doc>Specify the line spacing. Valid values: 1, 1.5, 2.</doc>
   <xsl:param name="lineSpacing" as="xs:decimal">1</xsl:param>
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
-    <desc>At which level to restart the numbering</desc>
+    <desc>At which level to restart the line numbering</desc>
   </doc>
   <xsl:param name="ledmacNumberDepth">1</xsl:param>
   <xsl:param  name="ledmac-firstlinenum">5</xsl:param>
@@ -1642,13 +1642,13 @@ the beginning of the document</desc>
           <xsl:when test="sarit:is-basetext-quote(.)">
 	    <xsl:choose>
 	      <xsl:when test="./tei:p or ./tei:lg">
-		<xsl:text>\begingroup%
-		\color{</xsl:text>
+		<xsl:text>\fancybreak{* * *}</xsl:text>
+		<xsl:text>\addfontfeature{Color=</xsl:text>
 		<xsl:value-of select="$lemmaColor"/>
 		<xsl:text>}</xsl:text>
 		<xsl:apply-templates/>
-		<xsl:text>\endgroup%
-		</xsl:text>
+		<xsl:text>\fancybreak{* * *}</xsl:text>
+		<xsl:text>\addfontfeature{Color=Black}</xsl:text>
 	      </xsl:when>
 	      <xsl:otherwise>
 		<xsl:text>\quotelemma{</xsl:text>
@@ -2722,6 +2722,9 @@ the beginning of the document</desc>
   <xsl:param name="depth">
       <xsl:value-of select="count(ancestor::tei:div|tei:div1|tei:div2|tei:div3|tei:div4|tei:div5)"/>
   </xsl:param>
+  <xsl:param name="restartNumbering" as="xs:boolean">
+    <xsl:value-of select="($depth = $ledmacNumberDepth) or (count(./tei:p | ./tei:lg) > 0)"/>
+  </xsl:param>
   <xsl:if test="not($skipTocDiv='true' and @type='toc')">
     <xsl:if test="not(child::tei:head) and @xml:id">
       <xsl:text>\label{</xsl:text>
@@ -2738,7 +2741,7 @@ the beginning of the document</desc>
 	<xsl:text>
 	</xsl:text>
 	
-	<xsl:if test="$depth = $ledmacNumberDepth">
+	<xsl:if test="$restartNumbering">
 	  <xsl:text>
 	    
 	    \beginnumbering% beginning numbering
@@ -2753,7 +2756,7 @@ the beginning of the document</desc>
 	
 	<xsl:apply-templates select="child::*[not(self::tei:head)]"/>
 	
-	<xsl:if test="$depth = $ledmacNumberDepth">
+	<xsl:if test="$restartNumbering">
 	  <xsl:text>
 	    
 	    \endnumbering% ending numbering from div
