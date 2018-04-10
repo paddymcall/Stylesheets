@@ -262,6 +262,8 @@ capable of dealing with UTF-8 directly.
   % arrows not in standard font
   \catcode`&#8612;=\active \def&#8612;{$\leftarrow$}% ↤ LEFTWARDS ARROW FROM BAR
   \catcode`&#8614;=\active \def&#8614;{$\rightarrow$}% ↦ RIGHTWARDS ARROW FROM BAR
+  % HOLE 🕳
+  \catcode`&#128371;=\active \def&#128371;{$\odot$}
   %% show a lot of tolerance
   \tolerance=9000
   \def\textJapanese{\fontspec{Kochi Mincho}}
@@ -1025,6 +1027,9 @@ capable of dealing with UTF-8 directly.
     </xsl:if>
     <xsl:choose>
       <xsl:when test="@type and matches(lower-case(@type), 'note')">
+	<xsl:text>\Bfootnote{</xsl:text>
+      </xsl:when>
+      <xsl:when test="@type and matches(lower-case(@type), 'testim|triv')">
 	<xsl:text>\Bfootnote{</xsl:text>
       </xsl:when>
       <xsl:otherwise>
@@ -4074,6 +4079,32 @@ the beginning of the document</desc>
 	</xsl:if>
 	<xsl:apply-templates/>
 	<xsl:value-of select="$postQuote"/>
+      </xsl:otherwise>
+    </xsl:choose>
+    </xsl:template>
+
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+      <desc>processing milestone elements</desc>
+    </doc>
+  <xsl:template match="tei:milestone">
+    <xsl:choose>
+      <xsl:when test="tei:match(@rend,'hr')">
+	<xsl:call-template name="horizontalRule"/>
+      </xsl:when>
+      <xsl:when test="@unit='line'">
+	<xsl:text></xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:call-template name="makeInline">
+	  <xsl:with-param name="style" select="@type"/>
+	  <xsl:with-param name="before">
+	    <xsl:if test="not(@unit='unspecified')">
+              <xsl:value-of select="@unit"/>
+              <xsl:text></xsl:text>
+	    </xsl:if>
+	  </xsl:with-param>
+	  <xsl:with-param name="after" select="@n"/>
+	</xsl:call-template>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
