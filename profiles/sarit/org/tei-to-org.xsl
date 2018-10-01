@@ -483,17 +483,29 @@
   <xsl:template match="tei:note">
     <!-- Putting in a zero width joiner since it won't work at beginning of line. -->
     <xsl:text>&#8205;</xsl:text>
-    <xsl:text>[fn:</xsl:text>
-    <xsl:number level="any" count="tei:note"/>
-    <xsl:text>]</xsl:text>
+    <xsl:choose>
+      <xsl:when test="ancestor::tei:app|tei:note">
+        <xsl:apply-templates mode="note"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>[fn:</xsl:text>
+        <xsl:number level="any" count="tei:note"/>
+        <xsl:text>]</xsl:text>
+      </xsl:otherwise>
+      </xsl:choose>
   </xsl:template>
   
   <xsl:template match="tei:note" mode="note">
-    <xsl:call-template name="newline"/>
-    <xsl:text>[fn:</xsl:text>
-    <xsl:number level="any" count="tei:note"/>
-    <xsl:text>] </xsl:text>
-    <xsl:apply-templates mode="note"/>
+    <xsl:choose>
+      <xsl:when test="ancestor::tei:app|tei:note"/>
+      <xsl:otherwise>
+        <xsl:call-template name="newline"/>
+        <xsl:text>[fn:</xsl:text>
+        <xsl:number level="any" count="tei:note"/>
+        <xsl:text>] </xsl:text>
+        <xsl:apply-templates mode="note"/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="tei:item|tei:biblStruct">
