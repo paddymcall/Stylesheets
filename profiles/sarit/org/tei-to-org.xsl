@@ -406,6 +406,9 @@
     <xsl:choose>
       <xsl:when test="ancestor::tei:listApp"/>
       <xsl:otherwise>
+	<xsl:if test="not(@from) and not(@to)">
+	  <xsl:value-of select="(tei:lem|tei:rdg)[1]"/>
+	</xsl:if>
 	<xsl:text>&#8205;</xsl:text>
 	<xsl:text>[fn:c-</xsl:text>
 	<xsl:number level="any" count="tei:app"/>
@@ -469,20 +472,24 @@
     <xsl:value-of select="local-name()"/>
     <xsl:text>: </xsl:text>
     <xsl:apply-templates />
-    <xsl:if test="@wit">
-      <xsl:text> (</xsl:text>
+    <xsl:if test="count(@wit|@source|@cit|@resp) > 0">
+	<xsl:text> (</xsl:text>
+      </xsl:if>
+      <xsl:for-each select="@wit|@source|@cit|@resp">
+	<xsl:value-of select="local-name()"/>
+	<xsl:text>: </xsl:text>
       <xsl:call-template name="insertLink">
-	<xsl:with-param name="target" select="@wit"/>
+	<xsl:with-param name="target" select="string()"/>
       </xsl:call-template>
-      <xsl:text>) </xsl:text>
-    </xsl:if>
-    <xsl:if test="@cit">
-      <xsl:text> (</xsl:text>
-      <xsl:call-template name="insertLink">
-	<xsl:with-param name="target" select="@cit"/>
-      </xsl:call-template>
-      <xsl:text>) </xsl:text>
-    </xsl:if>
+      <xsl:choose>
+	<xsl:when test="position() = last()">
+	<xsl:text>)</xsl:text>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:text>, </xsl:text>
+	</xsl:otherwise>
+      </xsl:choose>
+    </xsl:for-each>
     <xsl:call-template name="newline"/>
   </xsl:template>
   
