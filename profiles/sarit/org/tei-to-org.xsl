@@ -143,8 +143,12 @@
     <xsl:output-character character="*" string="\*"/>
     <xsl:output-character character="⋆" string="*"/>
   </xsl:character-map>
+
+  <xsl:character-map name="escape-vertical-lines">
+    <xsl:output-character character="|" string="\vert"/>
+  </xsl:character-map>
   
-  <xsl:output method="text" use-character-maps="escape-stars"/>
+  <xsl:output method="text" use-character-maps="escape-stars escape-vertical-lines"/>
   <xsl:output name="xmlout" method="xml" omit-xml-declaration="yes" indent="yes"/>
 
   <xsl:template match="teiHeader">
@@ -165,6 +169,8 @@
 	</xsl:if>
       </xsl:for-each>
     </xsl:if>
+    <xsl:call-template name="newline"/>
+    <xsl:text>#+OPTIONS: broken-links:mark</xsl:text>
     <xsl:call-template name="newline"/>
     <xsl:call-template name="newline"/>
     <xsl:text>⋆ Header</xsl:text>
