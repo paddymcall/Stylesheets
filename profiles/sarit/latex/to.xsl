@@ -1058,6 +1058,13 @@ capable of dealing with UTF-8 directly.
       <xsl:value-of select="@type"/>
       <xsl:text>]}</xsl:text>
     </xsl:if>
+    <xsl:if test="tei:lem/@resp">
+      <xsl:text> {\rmlatinfont [Resp. for accepted reading: </xsl:text>
+      <xsl:text>\url{</xsl:text>
+      <xsl:value-of select="tei:lem/@resp/string()"/>
+      <xsl:text>}</xsl:text>
+      <xsl:text>]}</xsl:text>
+    </xsl:if>
     <xsl:text>}}</xsl:text>
   </xsl:template>
   <xsl:template name="makeApp">
@@ -1079,7 +1086,7 @@ capable of dealing with UTF-8 directly.
         </xsl:choose>
       </xsl:with-param>
       <xsl:with-param name="lemmawitness">
-        <xsl:value-of select="tei:lem/@wit"/>
+        <xsl:value-of select="tei:lem/@wit|tei:lem/@src"/>
       </xsl:with-param>
       <xsl:with-param name="readings">
         <xsl:for-each select=".//tei:rdg">
@@ -1087,11 +1094,11 @@ capable of dealing with UTF-8 directly.
           <xsl:call-template name="startLanguage"/>
           <xsl:apply-templates/>
 	  <xsl:call-template name="endLanguage"/>
-	  <xsl:if test="string-length(@wit) > 0">
+	  <xsl:if test="string-length(@wit|@source) > 0">
 	    <xsl:text> \cite{</xsl:text>
 	    <xsl:call-template name="URIsToBibRefs">
 	      <xsl:with-param name="element" select="."/>
-	      <xsl:with-param name="targets" select="@wit"/>
+	      <xsl:with-param name="targets" select="@wit|@source"/>
 	    </xsl:call-template>
 	    <xsl:text>} </xsl:text>
 	  </xsl:if>
