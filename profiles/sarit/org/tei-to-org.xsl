@@ -473,17 +473,22 @@
     <xsl:text>: </xsl:text>
     <xsl:apply-templates />
     <xsl:if test="count(@wit|@source|@cit|@resp) > 0">
-	<xsl:text> (</xsl:text>
-      </xsl:if>
-      <xsl:for-each select="@wit|@source|@cit|@resp">
-	<xsl:value-of select="local-name()"/>
-	<xsl:text>: </xsl:text>
-      <xsl:call-template name="insertLink">
-	<xsl:with-param name="target" select="string()"/>
-      </xsl:call-template>
+      <xsl:text> (</xsl:text>
+    </xsl:if>
+    <xsl:for-each select="@wit|@source|@cit|@resp">
+      <xsl:value-of select="local-name()"/>
+      <xsl:text>: </xsl:text>
+      <xsl:for-each select="tokenize(string(), '\s+')">
+        <xsl:call-template name="makeOrgLink">
+	  <xsl:with-param name="pointer" select="."/>
+        </xsl:call-template>
+        <xsl:if test="not(position() = last())">
+	  <xsl:text>, </xsl:text>
+        </xsl:if>
+      </xsl:for-each>
       <xsl:choose>
 	<xsl:when test="position() = last()">
-	<xsl:text>)</xsl:text>
+	  <xsl:text>)</xsl:text>
 	</xsl:when>
 	<xsl:otherwise>
 	  <xsl:text>, </xsl:text>
@@ -505,7 +510,7 @@
         <xsl:number level="any" count="tei:note"/>
         <xsl:text>]</xsl:text>
       </xsl:otherwise>
-      </xsl:choose>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="tei:note" mode="note">
@@ -558,7 +563,7 @@
     <xsl:apply-templates/>
     <xsl:text>] </xsl:text>
   </xsl:template>
-    
+  
   <xsl:template match="tei:corr">
     <xsl:apply-templates/>
     <xsl:text> (corr.)</xsl:text>
