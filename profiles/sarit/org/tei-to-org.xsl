@@ -2,6 +2,7 @@
     version="2.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:tei-examples="http://www.tei-c.org/ns/Examples"
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:saxon="http://saxon.sf.net/"
@@ -139,6 +140,7 @@
     </desc>
   </doc>
 
+  
   <xsl:character-map name="escape-stars">
     <xsl:output-character character="*" string="\*"/>
     <xsl:output-character character="⋆" string="*"/>
@@ -588,6 +590,12 @@
 
   <xsl:template name="newline">
     <xsl:text>&#10;</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="tei-examples:egXML">
+    <xsl:text>~</xsl:text>
+    <xsl:value-of select="saxon:serialize(child::*, 'xmlout')"/>
+    <xsl:text>~</xsl:text>
   </xsl:template>
 
   <xsl:template match="*">
