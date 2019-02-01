@@ -594,7 +594,9 @@
 
   <xsl:template match="tei-examples:egXML">
     <xsl:text>~</xsl:text>
-    <xsl:value-of select="saxon:serialize(child::*, 'xmlout')"/>
+    <xsl:for-each select="child::*">
+      <xsl:value-of select="saxon:serialize(., 'xmlout')"/>
+    </xsl:for-each>
     <xsl:text>~</xsl:text>
   </xsl:template>
 
