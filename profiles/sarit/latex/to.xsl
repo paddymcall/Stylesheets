@@ -277,7 +277,7 @@ capable of dealing with UTF-8 directly.
     % set up a devanagari font
   \newfontfamily\devanagarifont</xsl:text>
   <xsl:choose>
-    <xsl:when test="//tei:text[@xml:lang='sa'] or //tei:text[@xml:lang='sa-Deva'] or //tei:body[@xml:lang='sa'] or //tei:body[@xml:lang='sa-Deva']">
+    <xsl:when test="count(//tei:text[@xml:lang='sa'] or //tei:text[@xml:lang='sa-Deva'] or //tei:body[@xml:lang='sa'] or //tei:body[@xml:lang='sa-Deva']) &gt; 0">
       <xsl:text>[Script=Devanagari</xsl:text>
       <xsl:if test="not($devanagariFontScale='')">
 	<xsl:text>,Scale=</xsl:text>
