@@ -121,7 +121,7 @@ of this software, even if advised of the possibility of such damage.
   <xsl:param name="latinFont">TeX Gyre Pagella</xsl:param>
   <xsl:param name="devanagariFont">Chandas</xsl:param>
   <xsl:param name="devanagariFontScale"></xsl:param>
-  <xsl:param name="devanagariNumerals">true</xsl:param>
+  <xsl:param name="devanagariNumerals">false</xsl:param>
   <xsl:param name="boFont">Tibetan Machine Uni</xsl:param>
   <xsl:param name="boFontScale">1.2</xsl:param>
   <xsl:param name="sansFont">TeX Gyre Bonum</xsl:param>
@@ -277,14 +277,15 @@ capable of dealing with UTF-8 directly.
     % set up a devanagari font
   \newfontfamily\devanagarifont</xsl:text>
   <xsl:choose>
-    <xsl:when test="count(//tei:text[@xml:lang='sa'] or //tei:text[@xml:lang='sa-Deva'] or //tei:body[@xml:lang='sa'] or //tei:body[@xml:lang='sa-Deva']) &gt; 0">
-      <xsl:text>[Script=Devanagari</xsl:text>
+    <xsl:when test="count(//tei:text[@xml:lang='sa'] | //tei:text[@xml:lang='sa-Deva'] | //tei:body[@xml:lang='sa'] | //tei:body[@xml:lang='sa-Deva']) &gt; 0">
+      <xsl:text>[Script=Devanagari,</xsl:text>
       <xsl:if test="not($devanagariFontScale='')">
-	<xsl:text>,Scale=</xsl:text>
+	<xsl:text>Scale=</xsl:text>
 	<xsl:value-of select="$devanagariFontScale" />
+        <xsl:text>,</xsl:text>
       </xsl:if>
-      <xsl:if test="$devanagariNumerals">
-	<xsl:text>,Mapping=devanagarinumerals,</xsl:text>
+      <xsl:if test="$devanagariNumerals='true'">
+	<xsl:text>Mapping=devanagarinumerals,</xsl:text>
       </xsl:if>
       <!-- the numbers don't seem to change anything? -->
       <xsl:text>AutoFakeBold=1.5,AutoFakeSlant=0.3]{</xsl:text>
@@ -311,8 +312,8 @@ capable of dealing with UTF-8 directly.
             <xsl:value-of select="$latinFont"/>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:text>%no latinFont set!
-    TeX Gyre Pagella</xsl:text>
+            <xsl:message>No $latinFont set, using default.</xsl:message>
+            <xsl:text>TeX Gyre Pagella</xsl:text>
           </xsl:otherwise>
         </xsl:choose>
         <xsl:text>}
@@ -874,8 +875,11 @@ capable of dealing with UTF-8 directly.
 %ENDFIGMAP
 </xsl:text>
     </xsl:if>
-    <xsl:text>%% require snapshot package to record versions to log files
-    \RequirePackage[log]{snapshot}
+    <xsl:text>% arara: xelatex: { shell: yes, synctex: yes, interaction: nonstopmode, options: [-8bit]}
+      % arara: biber
+      % arara: xelatex: { shell: yes, synctex: yes, interaction: nonstopmode, options: [-8bit]}
+      %% require snapshot package to record versions to log files
+      \RequirePackage[log]{snapshot}
     \documentclass[</xsl:text>
     <xsl:value-of select="$classParameters"/>
     <xsl:text>,</xsl:text>
