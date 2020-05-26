@@ -212,8 +212,6 @@
   <xsl:param name="ignoreText">false</xsl:param>
   <xsl:text>{ "index" : { "_index": "</xsl:text>
   <xsl:value-of select="$esIndexName"/>
-  <xsl:text>", "_type": "</xsl:text>
-  <xsl:value-of select="$typeName"/>
   <xsl:if test="$workId!=''">
     <xsl:text>", "_id": "</xsl:text>
     <xsl:value-of select="$workId"/>
