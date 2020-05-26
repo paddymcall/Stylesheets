@@ -994,6 +994,7 @@ capable of dealing with UTF-8 directly.
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
+
   <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
     <desc>
       <p>Creating an apparatus criticus reading.</p>
@@ -1079,10 +1080,10 @@ capable of dealing with UTF-8 directly.
       <xsl:with-param name="lemma">
         <xsl:choose>
           <xsl:when test="tei:lem">
-            <xsl:value-of select="tei:lem"/>
+            <xsl:apply-templates select="tei:lem"/>
           </xsl:when>
           <xsl:when test="not($lem='')">
-            <xsl:value-of select="$lem"/>
+            <xsl:apply-templates select="$lem"/>
           </xsl:when>
           <xsl:otherwise>
             <xsl:text></xsl:text>
@@ -1090,7 +1091,7 @@ capable of dealing with UTF-8 directly.
         </xsl:choose>
       </xsl:with-param>
       <xsl:with-param name="lemmawitness">
-        <xsl:value-of select="tei:lem/@wit|tei:lem/@src"/>
+        <xsl:value-of select="tei:lem/@wit|tei:lem/@src|tei:lem/@source"/>
       </xsl:with-param>
       <xsl:with-param name="readings">
         <xsl:for-each select=".//tei:rdg">
