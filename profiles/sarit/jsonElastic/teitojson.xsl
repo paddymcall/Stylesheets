@@ -245,8 +245,8 @@
       <xsl:value-of select="saxon:line-number()"/>
     </xsl:otherwise>
   </xsl:choose>
-  <xsl:text>", "absLnum" : "</xsl:text>
-  <xsl:value-of select="saxon:line-number()"/>
+  <!-- <xsl:text>", "absLnum" : "</xsl:text> -->
+  <!-- <xsl:value-of select="saxon:line-number()"/> -->
   <xsl:text>", "sysId" : "</xsl:text>
   <xsl:value-of select="$systemId"/>
   <xsl:text>", "lang" : "</xsl:text>
