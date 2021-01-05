@@ -212,15 +212,15 @@
   <xsl:param name="ignoreText">false</xsl:param>
   <xsl:text>{ "index" : { "_index": "</xsl:text>
   <xsl:value-of select="$esIndexName"/>
-  <xsl:text>", "_type": "</xsl:text>
-  <xsl:value-of select="$typeName"/>
   <xsl:if test="$workId!=''">
     <xsl:text>", "_id": "</xsl:text>
     <xsl:value-of select="$workId"/>
   </xsl:if>
   <xsl:text>" }}</xsl:text>
   <xsl:call-template name="newline"/>
-  <xsl:text>{  "tag" : "</xsl:text>
+  <xsl:text>{ "type": "</xsl:text>
+  <xsl:value-of select="$typeName"/>
+  <xsl:text>",  "tag" : "</xsl:text>
   <xsl:value-of select="local-name()"/>
   <xsl:text>", "revision" :"</xsl:text>
   <xsl:value-of select="$revision"/>
